@@ -1,0 +1,7 @@
+{'nombre': 'Test User', 'email': 'testuser-inc2@example.com', 'password': 'secret123', 'rol': 'alumno', 'rango': 'faixa blanca', 'metodo_pago': 'tarjeta'}
+{'nombre': 'Port Test', 'email': 'porttest@example.com', 'password': 'secret123', 'rol': 'alumno', 'rango': 'faixa blanca', 'metodo_pago': 'tarjeta'}
+{'nombre': 'Prueba', 'email': 'correo@ejemplo.com', 'password': '12345', 'rol': 'alumno', 'rango': 'faixa branca', 'metodo_pago': 'paypal'}
+{'nombre': 'Prueba', 'email': 'correo1@ejemplo.com', 'password': '12345', 'rol': 'alumno', 'rango': 'faixa branca', 'metodo_pago': 'paypal'}
+{'nombre': 'Prueba', 'email': 'correo2@ejemplo.com', 'password': '12345', 'rol': 'profesor', 'rango': None, 'metodo_pago': 'paypal'}
+{'nombre': '123', 'email': '123@123.com', 'password': '123', 'rol': 'profesor', 'rango': None, 'metodo_pago': 'tarjeta'}
+{'nombre': 'benjo', 'email': 'benjo@benjo.com', 'password': 'benjo', 'rol': 'alumno', 'rango': 'faixa preta'}

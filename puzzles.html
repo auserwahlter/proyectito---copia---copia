@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de técnicas — Luta e Dança</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/png">
+  <link rel="stylesheet" href="web/css/app.css">
+  <link rel="stylesheet" href="puzzle.css">
+  <style>
+    html { background: #12161a; }
+    body { background: #12161a; }
+    .topbar { background: #0d1117; border-color: #232a33; }
+    .main-panel { padding-top: 0; }
+    .hero-sim {
+      text-align: center;
+      padding: 34px 20px 10px;
+    }
+    .hero-sim h1 { margin: 0 0 6px; }
+    .hero-sim p { color: var(--text-muted); margin: 0 auto; max-width: 640px; }
+    #moves_list a, #defense_list a, #mod_list a {
+      display: block;
+      background: var(--bg-card-hover);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 8px;
+      color: var(--text-main);
+      padding: 10px 12px;
+      font-size: .86rem;
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+    #moves_list a:hover, #defense_list a:hover, #mod_list a:hover {
+      background: var(--bjj-blue);
+      border-color: transparent;
+      transform: translateY(-1px);
+    }
+    #moves_list a[disabled], #defense_list a[disabled] {
+      opacity: .35;
+      cursor: default;
+    }
+    #videoNote video, #videoNote iframe { max-width: 100%; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="inicio.html"><img class="brand-logo" src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA">LUTA<em>·DANÇA</em></a>
+    <nav class="nav-links">
+      <a href="inicio.html">Inicio</a>
+      <a href="index.html">Feed</a>
+      <a href="foro.html">Foro</a>
+      <a href="puzzles.html" class="activo">Puzzles</a>
+      <a href="encyclopedia.html">Enciclopedia</a>
+      <a href="informacion.html">Información</a>
+    </nav>
+    <div style="margin-left:auto; display:flex; gap:8px">
+      <a class="btn sutil" href="dashboard.html">Mi perfil</a>
+    </div>
+  </header>
+
+  <main class="main-panel">
+    <div class="hero-sim">
+      <h1>Simulador de técnicas</h1>
+      <p>Practica el árbol de decisiones del combate: ataca, defiende y cambia de posición con defensas reales, vídeos y enlaces de referencia.</p>
+    </div>
+
+    <div id="wrapper">
+
+      <div class="col">
+         <div id="position_wrapper">
+            <h2>Posición actual: <span id="current_position">—</span></h2>
+            <p>Posición del rival: <span id="current_position_opp">—</span></p>
+            <p>Modificadores: <span id="current_mods">Ninguno</span></p>
+         </div>
+
+         <div id="offense">
+              <h2>Movimientos posibles</h2>
+              <div id="moves_list"></div>
+
+              <h2>Modificadores de posición</h2>
+              <div id="mod_list"></div>
+
+              <input id="submit" type="button" value="¡Hacerlo!"/>
+          </div>
+
+          <div id="defense">
+               <h2>¡Tu rival intenta un movimiento!</h2>
+               <h3>Movimiento del rival: <span id="attempted_move_opp">—</span></h3>
+
+              <h3>Defensas posibles</h3>
+              <div id="defense_list"></div>
+
+              <h3>Acciones</h3>
+              <input id="submit_defend_yes" type="button" value="Defender"/>
+              <input id="submit_defend_no" type="button" value="No defender"/>
+              <input id="submit_defend_random" type="button" value="Aleatorio"/>
+          </div>
+     </div>
+
+      <div class="col">
+         <div id="notes">
+             <h3>Notas</h3>
+             <p class="note"><b>Posición:</b> <span id="positionNote">ninguna</span></p>
+             <p class="note"><b>Movimiento:</b> <span id="moveNote">ninguno</span></p>
+
+             <div style="display: flex; align-items: center;">
+                 <p class="note"><b>Vídeos:</b></p>
+                 <div id="video_toggle" title="Cambiar el tamaño de los vídeos"></div>
+             </div>
+
+             <div id="videoNote"></div>
+
+             <div id="linkNote">
+                 <p><b>Enlaces:</b></p>
+             </div>
+
+             <p class="note"><b>Defensas:</b> <span id="defenseNote">ninguna</span></p>
+         </div>
+      </div>
+
+ </div>
+
+ <div id="history"><b>Historial:</b> </div>
+
+ <div id="bottom_nav">
+    <div>
+        <p id="startFromSeated" class="restart button">Empezar pelea<br> en el suelo</p>
+        <p id="startFromRandom" class="restart button">Empezar<br> aleatorio</p>
+    </div>
+    <div id="posDropdown">
+        <select id="posList" onmousedown="this.value='';" onchange="reset(this.value);">
+            <option selected disabled>Elige una posición inicial</option>
+        </select>
+    </div>
+
+    <div>
+
+       <div class="ai_wrapper">
+           <input type="checkbox" id="AIoffense" checked onclick="updateSettings(this)" />IA en ataque |
+           <div class="slidecontainer">
+              0<input type="range" min="0" max="100" value="50" class="slider" id="offRange">100
+            </div>
+       </div>
+       <div class="ai_wrapper">
+           <input type="checkbox" id="AIdefense" checked onclick="updateSettings(this)"/>IA en defensa
+           <div class="slidecontainer">
+              0<input type="range" min="0" max="100" value="50" class="slider" id="defRange">100
+            </div>
+       </div>
+
+    </div>
+
+    <div>
+        <select id="forceAImove" onmousedown="this.value='';" onchange="opponentAttemptMove(this.value);">
+            <option selected disabled>Forzar movimiento del rival</option>
+        </select>
+    </div>
+
+</div>
+
+<div id="popup_small" class="cover" style="display:none">
+    <div class="inner">
+        <h3 class="title">Título</h3>
+        <p class="text">Texto</p>
+        <button>OK</button>
+    </div>
+</div>
+
+<div id="popup_offense" class="cover" style="display:none">
+    <div class="inner">
+        <h3 class="title">Título</h3>
+        <p class="text">Texto</p>
+        <button>OK</button>
+    </div>
+</div>
+
+<div id="notification" style="display:none">
+    <h3 class="title">Título</h3>
+    <p class="text">Texto</p>
+</div>
+
+</main>
+   <script src="puzzles/jquery-3.1.1.min.js"></script>
+   <script src="puzzles/TweenMax-2.0.0.min.js"></script>
+   <script src="puzzles/config.js"></script>
+   <script src="puzzles/positionList.js"></script>
+   <script src="puzzles/moves-submissions.js"></script>
+   <script src="puzzles/moves-positionChanges.js"></script>
+   <script src="puzzles/modifiers.js"></script>
+   <script src="puzzles/ai.js"></script>
+   <script src="puzzles/main.js"></script>
+
+</body>
+</html>

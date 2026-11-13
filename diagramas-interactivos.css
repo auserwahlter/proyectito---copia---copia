@@ -1,0 +1,297 @@
+/* Diagramas Interactivos — estilos compatibles con el dashboard */
+
+.di-wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  background: #0a0a0a;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.di-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  background: rgba(10,10,10,0.96);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+
+.di-toolbar .di-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: #e8e8e0;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.di-toolbar .di-btn:hover { background: rgba(255,255,255,0.08); }
+.di-toolbar .di-btn.active {
+  border-color: var(--primary, #b91c1c);
+  color: #fff;
+  background: rgba(185,28,28,0.2);
+}
+.di-toolbar .di-btn.primary {
+  background: var(--primary, #b91c1c);
+  border-color: transparent;
+  color: #fff;
+}
+.di-toolbar .di-spacer { flex: 1; }
+.di-toolbar .di-hint {
+  font-size: 11px;
+  color: #888;
+}
+
+.di-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.di-canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  cursor: grab;
+  min-width: 0;
+}
+.di-canvas-wrap.grabbing { cursor: grabbing; }
+.di-canvas-wrap.connecting { cursor: crosshair; }
+
+.di-canvas-wrap canvas { display: block; }
+
+.di-sidepanel {
+  width: 300px;
+  flex-shrink: 0;
+  border-left: 1px solid rgba(255,255,255,0.06);
+  background: rgba(15,15,15,0.98);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.di-sidepanel.hidden-panel { display: none; }
+
+.di-panel-head {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.di-panel-head h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: #fffdf9;
+}
+.di-panel-head p {
+  margin: 0;
+  font-size: 12px;
+  color: #888;
+  line-height: 1.4;
+}
+
+.di-panel-body {
+  padding: 12px 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.di-panel-body .form-group { margin-bottom: 12px; }
+.di-panel-body .form-label {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.di-panel-body .form-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  font-size: 13px;
+}
+.di-panel-body textarea.form-input { min-height: 72px; resize: vertical; }
+
+.di-media-preview {
+  margin-top: 8px;
+  border-radius: 8px;
+  overflow: hidden;
+  max-height: 140px;
+}
+.di-media-preview img { width: 100%; display: block; }
+.di-media-preview video { width: 100%; display: block; }
+
+.di-node-empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: #666;
+  font-size: 13px;
+}
+
+.di-minimap {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  width: 120px;
+  height: 80px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  background: rgba(0,0,0,0.6);
+  pointer-events: none;
+}
+
+.di-tooltip {
+  position: absolute;
+  background: rgba(0,0,0,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #ccc;
+  max-width: 200px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+  z-index: 5;
+}
+
+/* Grid de diagramas (estudiante) */
+.diagramas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.diagrama-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 18px;
+  cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.diagrama-card:hover {
+  border-color: var(--primary, #b91c1c);
+  transform: translateY(-2px);
+}
+.diagrama-card h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  color: #fffdf9;
+}
+.diagrama-card .di-meta {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 8px;
+}
+.diagrama-card .di-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: #aaa;
+  margin-top: 10px;
+}
+
+/* Viewer modal fullscreen */
+.di-viewer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 9000;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  padding: 20px;
+}
+.di-viewer-overlay.hidden { display: none; }
+
+.di-viewer-shell {
+  width: 100%;
+  max-width: 1400px;
+  display: flex;
+  flex-direction: column;
+  background: #0a0a0a;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.1);
+  overflow: hidden;
+  max-height: calc(100vh - 40px);
+}
+
+.di-viewer-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.di-viewer-header h2 {
+  margin: 0;
+  font-size: 18px;
+  flex: 1;
+  color: #fffdf9;
+}
+.di-viewer-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.di-social-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.di-like-btn.liked { color: var(--accent, #f43f5e); }
+
+.di-comments-section {
+  padding: 12px 18px 18px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  max-height: 220px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.di-comment-item {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px;
+}
+.di-comment-item strong { color: #ccc; }
+.di-comment-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.di-comment-form input {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.3);
+  color: #fff;
+  font-size: 13px;
+}
+
+@media (max-width: 768px) {
+  .di-body { flex-direction: column; }
+  .di-sidepanel {
+    width: 100%;
+    max-height: 240px;
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+}

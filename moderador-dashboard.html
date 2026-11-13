@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Moderador — Luta e Dança</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/x-icon" />
+  <link rel="stylesheet" href="student-dashboard.css" />
+  <link rel="stylesheet" href="profesor-dashboard.css" />
+  <link rel="stylesheet" href="moderador-dashboard.css" />
+
+ 
+</head>
+<body>
+<div class="dashboard-shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar-card">
+    <div class="brand-block">
+      <img src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA" style="height:40px;width:auto;border-radius:8px;margin-bottom:6px">
+      <p class="eyebrow">LUTA E DANÇA</p>
+      <h1>Panel moderador</h1>
+      <p class="brand-copy">Control total de usuarios, contenido y reportes.</p>
+    </div>
+    <div class="profile-card">
+      <div class="avatar-ring">🛡️</div>
+      <div>
+        <p class="profile-label">Moderador</p>
+        <h2 id="mod-name">—</h2>
+        <p class="profile-meta" id="mod-meta">—</p>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" href="#" data-section="inicio"> Inicio</a>
+      <a class="nav-item" href="#" data-section="usuarios"> Usuarios</a>
+      <a class="nav-item" href="#" data-section="videos"> Videos</a>
+      <a class="nav-item" href="#" data-section="imagenes"> Imágenes</a>
+      <a class="nav-item" href="#" data-section="instruccionales"> Instruccionales</a>
+      <a class="nav-item" href="#" data-section="diagramas"> Diagramas</a>
+ <!-- <a class="nav-item" href="#" data-section="reportes-contenido"> Reportes contenido</a>-->  
+      <a class="nav-item" href="#" data-section="foro"> Foro</a>
+<!--    <a class="nav-item" href="#" data-section="comentarios"> Comentarios</a>-->  
+      <a class="nav-item" href="#" data-section="reportes"> Reportes</a>
+      <a class="nav-item" href="#" data-section="perfil"> Mi perfil</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="focus-chip mod-chip"> Acceso total</div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main-panel">
+    <section class="dashboard-topbar">
+      <div class="dashboard-topbar-copy">
+        <p class="eyebrow">Centro de control</p>
+        <h2 id="section-title">Panel de moderación</h2>
+      </div>
+      <button id="logout-btn" class="ghost-btn">Cerrar sesión</button>
+    </section>
+
+    <!-- ═══ INICIO ═══ -->
+    <div id="section-inicio" class="mod-section">
+      <section class="stats-grid">
+        <article class="stat-card large">
+          <p class="stat-label">Total usuarios</p>
+          <div class="big-metric" id="stat-total-usuarios">—</div>
+          <p class="stat-note">registrados en la plataforma</p>
+        </article>
+        <article class="stat-card"><p class="stat-label">Alumnos</p><div class="big-metric" id="stat-alumnos">—</div></article>
+        <article class="stat-card"><p class="stat-label">Profesores</p><div class="big-metric" id="stat-profesores">—</div></article>
+        <article class="stat-card"><p class="stat-label">Moderadores</p><div class="big-metric" id="stat-moderadores">—</div></article>
+        <article class="stat-card"><p class="stat-label">Videos</p><div class="big-metric" id="stat-videos">—</div></article>
+        <article class="stat-card"><p class="stat-label">Instruccionales</p><div class="big-metric" id="stat-instruccionales">—</div></article>
+        <article class="stat-card"><p class="stat-label">Posts foro</p><div class="big-metric" id="stat-posts">—</div></article>
+        <article class="stat-card"><p class="stat-label">Pendientes</p><div class="big-metric" id="stat-pendientes" style="color:#f0a500">—</div></article>
+      </section>
+      <section class="content-grid">
+        <article class="panel-card">
+          <div class="panel-header"><div><p class="eyebrow">Acceso rápido</p><h3>Acciones frecuentes</h3></div></div>
+          <div class="quick-actions-grid">
+            <button class="quick-action-btn" data-goto="usuarios"><span class="qa-icon">👥</span><span>Usuarios</span></button>
+            <button class="quick-action-btn" data-goto="videos"><span class="qa-icon">🎬</span><span>Videos</span></button>
+            <button class="quick-action-btn" data-goto="foro"><span class="qa-icon">💬</span><span>Foro</span></button>
+            <button class="quick-action-btn" data-goto="reportes"><span class="qa-icon">📊</span><span>Reportes</span></button>
+          </div>
+        </article>
+        <article class="panel-card">
+          <div class="panel-header"><div><p class="eyebrow">Requieren atención</p><h3>Usuarios pendientes</h3></div></div>
+          <div id="pendientes-list" class="media-list"><p class="empty-state-msg">Cargando…</p></div>
+        </article>
+      </section>
+    </div>
+
+    <!-- ═══ USUARIOS ═══ -->
+    <div id="section-usuarios" class="mod-section hidden">
+      <section class="panel-card">
+        <div class="panel-header">
+          <div><p class="eyebrow">CRUD completo</p><h3>Gestión de usuarios</h3></div>
+          <div class="filter-row">
+            <input class="form-input small-input" type="text" id="search-usuario" placeholder="Buscar nombre o email…" />
+            <select class="form-input small-select" id="filter-rol">
+              <option value="">Todos los roles</option>
+              <option value="alumno">Alumno</option>
+              <option value="profesor">Profesor</option>
+              <option value="moderador">Moderador</option>
+            </select>
+            <select class="form-input small-select" id="filter-estado">
+              <option value="">Todos los estados</option>
+              <option value="activo">Activo</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="suspendido">Suspendido</option>
+            </select>
+            <button class="ghost-btn small-btn" id="filter-btn">Filtrar</button>
+            <button class="primary-btn small-btn" id="nuevo-usuario-btn">+ Nuevo</button>
+          </div>
+        </div>
+        <div id="usuarios-table-wrap" class="table-wrap"><p class="empty-state-msg">Cargando…</p></div>
+      </section>
+    </div>
+
+    <!-- ═══ VIDEOS ═══ -->
+    <div id="section-videos" class="mod-section hidden">
+      <section class="panel-card">
+        <div class="panel-header">
+          <div><p class="eyebrow">CRUD</p><h3>Videos de profesores</h3></div>
+          <div class="filter-row">
+            <input class="form-input small-input" type="text" id="search-video" placeholder="Buscar título…" />
+            <select class="form-input small-select" id="filter-video-dificultad">
+              <option value="">Todas las dificultades</option>
+              <option value="basico">Básico</option>
+              <option value="intermedio">Intermedio</option>
+              <option value="avanzado">Avanzado</option>
+            </select>
+            <button class="ghost-btn small-btn" id="filter-video-btn">Filtrar</button>
+          </div>
+        </div>
+        <div id="videos-mod-list" class="media-list"><p class="empty-state-msg">Cargando…</p></div>
+      </section>
+    </div>
+
+    <!-- ═══ IMÁGENES ═══ -->
+    <div id="section-imagenes" class="mod-section hidden">
+      <section class="panel-card">
+        <div class="panel-header">
+          <div><p class="eyebrow">CRUD</p><h3>Imágenes técnicas</h3></div>
+          <span class="panel-pill" id="imagenes-total-pill">0</span>
+        </div>
+        <div id="imagenes-mod-grid" class="imagenes-gallery"><p class="empty-state-msg">Cargando…</p></div>
+      </section>
+    </div>
+
+    <!-- ═══ INSTRUCCIONALES ═══ -->
+    <div id="section-instruccionales" class="mod-section hidden">
+      <section class="panel-card">
+        <div class="panel-header">
+          <div><p class="eyebrow">CRUD</p><h3>Instruccionales</h3></div>
+          <span class="panel-pill" id="inst-total-pill">0</span>
+        </div>
+        <div id="inst-mod-list" class="media-list"><p class="empty-state-msg">Cargando…</p></div>
+      </section>
+    </div>
+
+    <!-- ═══ DIAGRAMAS INTERACTIVOS ═══ -->
+    <div id="section-diagramas" class="mod-section hidden">
+      <section class="content-grid" style="margin-bottom:1rem">
+        <article class="stat-card"><p class="mini-label">Total diagramas</p><strong id="diag-stat-total">—</strong></article>
+        <article class="stat-card"><p class="mini-label">Publicados</p><strong id="diag-stat-pub">—</strong></article>
+        <article class="stat-card"><p class="mini-label">Visualizaciones</p><strong id="diag-stat-vistas">—</strong></article>
+        <article class="stat-card"><p class="mini-label">Likes</p><strong id="diag-stat-likes">—</strong></article>
+        <article class="stat-card"><p class="mini-label">Comentarios</p><strong id="diag-stat-com">—</strong></article>
+      </section>
+      <section class="panel-card">
+        <div class="panel-header">
+          <div><p class="eyebrow">Moderación</p><h3>Diagramas interactivos</h3></div>
+          <span class="panel-pill" id="diag-total-pill">0</span>
+        </div>
+        <div id="diag-mod-list" class="media-list"><p class="empty-state-msg">Cargando…</p></div>
+      </section>
+    </div>
+
+    <!-- ═══ REPORTES DE CONTENIDO ═══ -->
+    <div id="section-reportes-contenido" class="mod-section hidden">
+      <section class="panel-card">
+        <div class="panel-header">
+          <div><p class="eyebrow">Moderación</p><h3>Reportes de contenido</h3></div>
+          <div class="filter-row">
+            <select class="form-input small-select" id="filter-reporte-estado">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendientes</option>
+              <option value="revisado">Revisados</option>
+              <option value="descartado">Descartados</option>
+            </select>
+            <select class="form-input small-select" id="filter-reporte-tipo">
+              <option value="">Todos los tipos</option>
+              <option value="diagrama">Diagramas</option>
+              <option value="video">Videos</option>
+              <option value="imagen">Imágenes</option>
+              <option value="instruccional">Instruccionales</option>
+            </select>
+            <button class="ghost-btn small-btn" id="filter-reporte-btn" type="button" onclick="loadReportesContenido()">Filtrar</button>
+          </div>
+        </div>
+        <div id="reportes-contenido-list" class="media-list"><p class="empty-state-msg">Cargando…</p></div>
+      </section>
+    </div>
+
+    <!-- ═══ FORO ═══ -->
+    <div id="section-foro" class="mod-section hidden">
+      <section class="panel-card">
+        <div class="panel-header">
+          <div><p class="eyebrow">Moderación</p><h3>Publicaciones del foro</h3></div>
+          <div class="filter-row">
+            <input class="form-input small-input" type="text" id="search-post" placeholder="Buscar en posts…" />
+            <button class="ghost-btn small-btn" id="filter-post-btn">Buscar</button>
+          </div>
+        </div>
+        <div id="foro-mod-list" class="media-list"><p class="empty-state-msg">Cargando…</p></div>
+      </section>
+    </div>
+
+    <!-- ═══ COMENTARIOS ═══ -->
+    <div id="section-comentarios" class="mod-section hidden">
+      <section class="panel-card">
+        <div class="panel-header">
+          <div><p class="eyebrow">Moderación</p><h3>Comentarios de contenido</h3></div>
+          <div class="filter-row">
+            <select class="form-input small-select" id="filter-com-tipo">
+              <option value="">Todos los tipos</option>
+              <option value="video">Videos</option>
+              <option value="imagen">Imágenes</option>
+              <option value="instruccional">Instruccionales</option>
+              <option value="diagrama">Diagramas</option>
+            </select>
+            <input class="form-input small-input" type="text" id="search-comentario" placeholder="Buscar en comentarios…" />
+            <button class="ghost-btn small-btn" id="filter-com-btn">Filtrar</button>
+          </div>
+        </div>
+        <div id="comentarios-mod-stats" class="mod-com-stats" style="display:flex;gap:1rem;flex-wrap:wrap;padding:.5rem 0 .75rem;font-size:.82rem;color:#888"></div>
+        <div id="comentarios-mod-list" class="media-list"><p class="empty-state-msg">Cargando…</p></div>
+      </section>
+    </div>
+
+    <!-- ═══ REPORTES ═══ -->
+    <div id="section-reportes" class="mod-section hidden">
+      <section class="content-grid reportes-grid">
+
+        <article class="panel-card">
+          <div class="panel-header"><div><p class="eyebrow">Exportar datos</p><h3>Reporte de usuarios</h3></div></div>
+          <p class="report-desc">Exporta la lista completa de usuarios con rol, estado, rango y fecha de registro.</p>
+          <div class="filter-row" style="margin-top:.75rem">
+            <select class="form-input small-select" id="rep-usuarios-rol"><option value="">Todos los roles</option><option value="alumno">Alumno</option><option value="profesor">Profesor</option><option value="moderador">Moderador</option></select>
+            <select class="form-input small-select" id="rep-usuarios-estado"><option value="">Todos los estados</option><option value="activo">Activo</option><option value="pendiente">Pendiente</option><option value="suspendido">Suspendido</option></select>
+          </div>
+          <div class="form-actions" style="margin-top:.75rem">
+            <button class="ghost-btn" onclick="exportReport('usuarios','csv')">⬇️ CSV</button>
+            <button class="primary-btn" onclick="exportReport('usuarios','json')">⬇️ JSON</button>
+          </div>
+        </article>
+
+        <article class="panel-card">
+          <div class="panel-header"><div><p class="eyebrow">Exportar datos</p><h3>Reporte de diagramas</h3></div></div>
+          <p class="report-desc">Diagramas interactivos con autor, vistas, likes, comentarios y nodos.</p>
+          <div class="form-actions" style="margin-top:.75rem">
+            <button class="ghost-btn" onclick="exportReport('diagramas','csv')">⬇️ CSV</button>
+            <button class="primary-btn" onclick="exportReport('diagramas','json')">⬇️ JSON</button>
+          </div>
+        </article>
+
+        <article class="panel-card">
+          <div class="panel-header"><div><p class="eyebrow">Exportar datos</p><h3>Reporte de contenido</h3></div></div>
+          <p class="report-desc">Videos, imágenes e instruccionales subidos por profesores, con metadatos completos.</p>
+          <div class="form-actions" style="margin-top:.75rem">
+            <button class="ghost-btn" onclick="exportReport('contenido','csv')">⬇️ CSV</button>
+            <button class="primary-btn" onclick="exportReport('contenido','json')">⬇️ JSON</button>
+          </div>
+        </article>
+
+        <article class="panel-card">
+          <div class="panel-header"><div><p class="eyebrow">Exportar datos</p><h3>Reporte del foro</h3></div></div>
+          <p class="report-desc">Todas las publicaciones del foro con autor, mensaje, likes y respuestas.</p>
+          <div class="form-actions" style="margin-top:.75rem">
+            <button class="ghost-btn" onclick="exportReport('foro','csv')">⬇️ CSV</button>
+            <button class="primary-btn" onclick="exportReport('foro','json')">⬇️ JSON</button>
+          </div>
+        </article>
+
+        <article class="panel-card">
+          <div class="panel-header"><div><p class="eyebrow">Exportar datos</p><h3>Reporte general</h3></div></div>
+          <p class="report-desc">Resumen ejecutivo de toda la plataforma: métricas de usuarios, contenido y actividad.</p>
+          <div class="form-actions" style="margin-top:.75rem">
+            <button class="ghost-btn" onclick="exportReport('general','csv')">⬇️ CSV</button>
+            <button class="primary-btn" onclick="exportReport('general','json')">⬇️ JSON</button>
+          </div>
+        </article>
+
+      </section>
+
+      <!-- Reportes gráficos -->
+      <section class="panel-card" style="margin-top:1rem">
+        <div class="panel-header">
+          <div><p class="eyebrow">Visualización de datos</p><h3>Reportes gráficos</h3></div>
+        </div>
+        <div class="filter-row" style="margin-bottom:1rem">
+          <select class="form-input small-select" id="chart-metric">
+            <option value="usuarios_rol">Usuarios por rol</option>
+            <option value="usuarios_estado">Usuarios por estado</option>
+            <option value="alumnos_rango">Alumnos por rango</option>
+            <option value="contenido_tipo">Contenido por tipo</option>
+            <option value="videos_dificultad">Videos por dificultad</option>
+            <option value="contenido_por_profesor">Contenido por profesor (top 10)</option>
+            <option value="foro_actividad">Foro: likes vs respuestas</option>
+            <option value="resumen_general">Resumen general (totales)</option>
+            <option value="registros_por_mes">Registros de usuarios por mes</option>
+          </select>
+          <div class="chart-type-toggle" id="chart-type-toggle">
+            <button class="ghost-btn small-btn chart-type-btn active" data-type="pie">🥧 Torta</button>
+            <button class="ghost-btn small-btn chart-type-btn" data-type="bar">📊 Barras</button>
+            <button class="ghost-btn small-btn chart-type-btn" data-type="line">📈 Líneas</button>
+          </div>
+          <button class="ghost-btn small-btn" id="chart-download-btn">⬇️ PNG</button>
+        </div>
+        <div style="position:relative;height:380px;max-width:760px;margin:0 auto">
+          <canvas id="report-chart"></canvas>
+        </div>
+        <p id="chart-empty-msg" class="empty-state-msg hidden" style="text-align:center;margin-top:1rem">Sin datos para mostrar.</p>
+      </section>
+
+      <!-- Vista previa del reporte -->
+      <section class="panel-card" style="margin-top:1rem" id="report-preview-card">
+        <div class="panel-header">
+          <div><p class="eyebrow">Vista previa</p><h3 id="report-preview-title">—</h3></div>
+          <button class="ghost-btn small-btn" id="report-download-btn" style="display:none">⬇️ Descargar</button>
+        </div>
+        <div id="report-preview-wrap" class="table-wrap">
+          <p class="empty-state-msg">Selecciona un reporte para previsualizarlo aquí.</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- ═══ PERFIL ═══ -->
+    <div id="section-perfil" class="mod-section hidden">
+      <section class="content-grid">
+        <article class="panel-card upload-card">
+          <div class="panel-header"><div><p class="eyebrow">Cuenta</p><h3>Editar mi perfil</h3></div></div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="perfil-nombre">Nombre completo</label>
+              <input class="form-input" type="text" id="perfil-nombre" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="perfil-email">Correo electrónico</label>
+              <input class="form-input" type="email" id="perfil-email" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="perfil-password-actual">Contraseña actual</label>
+              <input class="form-input" type="password" id="perfil-password-actual" placeholder="Requerida para guardar" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="perfil-password-nueva">Nueva contraseña <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+              <input class="form-input" type="password" id="perfil-password-nueva" placeholder="Dejar vacío para no cambiarla" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="primary-btn" id="perfil-save-btn">💾 Guardar cambios</button>
+          </div>
+          <div id="perfil-feedback" class="feedback-msg hidden"></div>
+        </article>
+        <article class="panel-card">
+          <div class="panel-header"><div><p class="eyebrow">Información</p><h3>Datos de cuenta</h3></div></div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;padding:.25rem 0">
+            <div class="mini-stat"><span class="mini-label">Nombre</span><strong id="perfil-info-nombre">—</strong></div>
+            <div class="mini-stat"><span class="mini-label">Email</span><strong id="perfil-info-email">—</strong></div>
+            <div class="mini-stat"><span class="mini-label">Rol</span><strong><span class="badge badge-moderador">Moderador</span></strong></div>
+            <div class="mini-stat"><span class="mini-label">Estado</span><strong id="perfil-info-estado">—</strong></div>
+            <div class="mini-stat"><span class="mini-label">Desde</span><strong id="perfil-info-desde">—</strong></div>
+          </div>
+        </article>
+      </section>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── MODAL USUARIO ── -->
+<div id="edit-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 id="modal-title">Editar usuario</h3>
+      <button class="ghost-btn small-btn" id="modal-close">✕</button>
+    </div>
+    <div class="form-grid">
+      <input type="hidden" id="edit-user-id" />
+      <div class="form-group">
+        <label class="form-label" for="edit-nombre">Nombre</label>
+        <input class="form-input" type="text" id="edit-nombre" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="edit-email">Email</label>
+        <input class="form-input" type="email" id="edit-email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="edit-password">Nueva contraseña <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+        <input class="form-input" type="password" id="edit-password" placeholder="Dejar vacío para no cambiar" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="edit-rol">Rol</label>
+        <select class="form-input" id="edit-rol">
+          <option value="alumno">Alumno</option>
+          <option value="profesor">Profesor</option>
+          <option value="moderador">Moderador</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="edit-estado">Estado</label>
+        <select class="form-input" id="edit-estado">
+          <option value="activo">Activo</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="suspendido">Suspendido</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="edit-rango">Rango (alumnos)</label>
+        <select class="form-input" id="edit-rango">
+          <option value="">Sin rango</option>
+          <option value="faixa branca">Faixa branca</option>
+          <option value="faixa azul">Faixa azul</option>
+          <option value="faixa roxa">Faixa roxa</option>
+          <option value="faixa marrom">Faixa marrón</option>
+          <option value="faixa preta">Faixa preta</option>
+        </select>
+      </div>
+    </div>
+    <div id="edit-feedback" class="feedback-msg hidden"></div>
+    <div class="form-actions" style="margin-top:1rem">
+      <button class="ghost-btn" id="modal-cancel">Cancelar</button>
+      <button class="primary-btn" id="modal-save">💾 Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL NUEVO USUARIO ── -->
+<div id="new-user-modal" class="modal-overlay hidden">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Crear usuario</h3>
+      <button class="ghost-btn small-btn" id="new-modal-close">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label" for="new-nombre">Nombre *</label>
+        <input class="form-input" type="text" id="new-nombre" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="new-email">Email *</label>
+        <input class="form-input" type="email" id="new-email" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="new-password">Contraseña *</label>
+        <input class="form-input" type="password" id="new-password" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="new-rol">Rol</label>
+        <select class="form-input" id="new-rol">
+          <option value="alumno">Alumno</option>
+          <option value="profesor">Profesor</option>
+          <option value="moderador">Moderador</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="new-estado">Estado inicial</label>
+        <select class="form-input" id="new-estado">
+          <option value="activo">Activo</option>
+          <option value="pendiente">Pendiente</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="new-rango">Rango (alumnos)</label>
+        <select class="form-input" id="new-rango">
+          <option value="">Sin rango</option>
+          <option value="faixa branca">Faixa branca</option>
+          <option value="faixa azul">Faixa azul</option>
+          <option value="faixa roxa">Faixa roxa</option>
+          <option value="faixa marrom">Faixa marrón</option>
+          <option value="faixa preta">Faixa preta</option>
+        </select>
+      </div>
+    </div>
+    <div id="new-user-feedback" class="feedback-msg hidden"></div>
+    <div class="form-actions" style="margin-top:1rem">
+      <button class="ghost-btn" id="new-modal-cancel">Cancelar</button>
+      <button class="primary-btn" id="new-modal-save">✅ Crear usuario</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ── Comentarios moderador ── */
+.mod-com-item {
+  display:flex; align-items:flex-start; gap:.75rem;
+  padding:.75rem; background:var(--bg-secondary,#1e1e2e);
+  border:1px solid var(--border,#2a2a3e); border-radius:10px;
+  transition:border-color .2s;
+}
+.mod-com-item:hover { border-color:var(--accent,#e63946); }
+.mod-com-avatar {
+  width:32px; height:32px; border-radius:50%; background:#e63946;
+  color:#fff; font-size:.85rem; font-weight:700;
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.mod-com-avatar.reply { background:#2a2a3e; color:#888; }
+.mod-com-body { flex:1; min-width:0; }
+.mod-com-header { display:flex; align-items:center; gap:.4rem; flex-wrap:wrap; margin-bottom:.25rem; }
+.mod-com-autor { font-size:.83rem; font-weight:700; color:var(--text-primary,#e8e8f0); }
+.mod-com-fecha { font-size:.72rem; color:#888; margin-left:auto; }
+.mod-com-tipo-badge { font-size:.65rem; padding:1px 6px; border-radius:999px;
+  background:rgba(91,141,239,.15); color:#5B8DEF; border:1px solid rgba(91,141,239,.3); }
+.mod-com-reply-badge { font-size:.65rem; padding:1px 6px; border-radius:999px;
+  background:rgba(240,165,0,.12); color:#F0A500; border:1px solid rgba(240,165,0,.3); }
+.mod-com-mensaje { font-size:.85rem; color:#c8c8d8; line-height:1.5; margin:0; word-break:break-word; }
+.mod-com-ref { font-size:.72rem; color:#888; margin:.25rem 0 0; }
+
+/* Modal comentarios */
+.mod-com-overlay { position:fixed; inset:0; background:rgba(0,0,0,.72);
+  backdrop-filter:blur(4px); z-index:1000; display:flex; align-items:center;
+  justify-content:center; padding:1rem; }
+.mod-com-overlay.hidden { display:none; }
+.mod-com-modal { background:var(--bg-primary,#13131f); border:1px solid var(--border,#2a2a3e);
+  border-radius:16px; width:100%; max-width:640px; max-height:80vh;
+  display:flex; flex-direction:column; overflow:hidden; }
+.mod-com-modal-header { display:flex; align-items:flex-start; justify-content:space-between;
+  padding:1.1rem 1.4rem .9rem; border-bottom:1px solid var(--border,#2a2a3e); flex-shrink:0; }
+.mod-com-thread { flex:1; overflow-y:auto; padding:1rem 1.4rem; display:flex;
+  flex-direction:column; gap:.6rem; }
+.mod-com-thread-item { display:flex; gap:.6rem; align-items:flex-start; }
+.mod-com-thread-item.is-reply { margin-left:2.5rem; padding-left:.9rem;
+  border-left:2px solid var(--border,#2a2a3e); }
+.mod-com-thread-msg { font-size:.84rem; color:#c8c8d8; line-height:1.5; margin:.2rem 0 0; }
+.mod-com-thread-del { background:none; border:none; color:#888; cursor:pointer;
+  font-size:.72rem; padding:2px 5px; border-radius:4px; margin-left:auto; flex-shrink:0;
+  transition:color .15s, background .15s; }
+.mod-com-thread-del:hover { color:#ff4444; background:rgba(255,68,68,.1); }
+</style>
+
+<!-- Modal: hilo completo de comentarios -->
+<div id="mod-com-overlay" class="mod-com-overlay hidden">
+  <div class="mod-com-modal">
+    <div class="mod-com-modal-header">
+      <div>
+        <p class="eyebrow" id="mod-com-modal-eyebrow">Comentarios</p>
+        <h3 id="mod-com-modal-title" style="margin:0;font-size:1rem">—</h3>
+      </div>
+      <button class="ghost-btn small-btn" id="mod-com-modal-close">✕</button>
+    </div>
+    <div class="mod-com-thread" id="mod-com-thread">
+      <p class="empty-state-msg">Cargando…</p>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="moderador-dashboard.js"></script>
+<!-- <script src="student-dashboard.js"></script> -->
+
+</body>
+</html>

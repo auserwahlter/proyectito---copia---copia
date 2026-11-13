@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Información — Luta e Dança</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/png">
+  <link rel="stylesheet" href="web/css/app.css">
+</head>
+<body id="top">
+  <header class="topbar">
+    <a class="brand" href="inicio.html"><img class="brand-logo" src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA">LUTA<em>·DANÇA</em></a>
+    <nav class="nav-links">
+      <a href="inicio.html">Inicio</a>
+      <a href="index.html">Feed</a>
+      <a href="foro.html">Foro</a>
+      <a href="puzzles.html">Puzzles</a>
+      <a href="encyclopedia.html">Enciclopedia</a>
+      <a href="informacion.html" class="activo">Información</a>
+    </nav>
+    <a class="btn primario" href="dashboard.html#publicar">Publicar</a>
+    <div id="nav-identidad" style="margin-left:auto"></div>
+  </header>
+
+  <section class="hero">
+    <h1>LUTA <em>E</em> DANÇA</h1>
+    <h2 style="margin:0 0 8px; font-weight:600">Aprende de Grappling</h2>
+    <p>Una plataforma abierta donde cualquier miembro publica, aprende y gana: videos, instruccionales, diagramas interactivos y un simulador de técnicas pensados para que dejes de ser un espectador pasivo.</p>
+    <div class="ctas">
+      <a class="btn primario" href="login.html">Únete ahora</a>
+      <a class="btn" href="index.html">Ver feed de la comunidad</a>
+    </div>
+  </section>
+
+  <section class="pilares">
+    <div class="pilar"><h3>Base sólida</h3><p>Construye una base sólida para tu estilo de combate.</p></div>
+    <div class="pilar"><h3>Confianza corporal</h3><p>Pierde el miedo a pasar guardia, desarrolla confianza en tu cuerpo y mejora tu postura.</p></div>
+    <div class="pilar"><h3>Plan personalizado</h3><p>Crea un plan de pelea personalizado para alcanzar tus objetivos más rápido.</p></div>
+  </section>
+
+  <section class="centro">
+    <h2 style="text-align:center">¡Eche un vistazo a lo que te espera!</h2>
+    <div class="ratio16">
+      <iframe src="https://www.youtube.com/embed/AoxU1CY-4Kg?mute=1&amp;showinfo=0&amp;start=0" allowfullscreen loading="lazy"></iframe>
+    </div>
+  </section>
+
+  <section class="doble">
+    <div class="cuadro">
+      <h3>Sobre nosotros</h3>
+      <p class="span-mut">Con el advenimiento de la digitalización y la masificación del internet en las últimas dos décadas, el panorama de la enseñanza técnica experimentó una transformación radical. El mercado se inundó de plataformas de distribución de video bajo demanda, canales especializados y videotutoriales de larga duración —instructionals— protagonizados por competidores de élite.</p>
+    </div>
+    <div class="cuadro">
+      <h3>Nuestro problema</h3>
+      <p class="span-mut">Ese fenómeno democratizó el acceso a la información técnica de vanguardia, pero originó la saturación de información desestructurada. Las plataformas comerciales operan como repositorios de video pasivos, asumiendo que ver repetidamente una técnica equivale a comprender cuándo y cómo aplicarla en un combate real.</p>
+    </div>
+  </section>
+
+  <section class="centro">
+    <div class="cuadro" style="text-align:center">
+      <h3>Nuestra historia</h3>
+      <p class="span-mut">Al carecer de las limitaciones operativas y los sesgos que implicaría diseñar el software para un gimnasio o club deportivo específico, el sistema se concibe desde su origen como una solución tecnológica global y escalable para la comunidad de deportes de combate.</p>
+      <div class="ctas" style="margin-top:10px">
+        <a class="btn sutil" href="https://www.instagram.com/el.barretttt/" target="_blank" rel="noopener">Aprende más (Instagram)</a>
+        <a class="btn sutil" href="https://www.youtube.com/watch?v=sXw29acNCcI&amp;t=11s" target="_blank" rel="noopener">Aprende más (YouTube)</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="centro">
+    <div class="cuadro">
+      <h3 style="text-align:center">¿Problemas con el registro? ¡Contáctanos!</h3>
+      <form class="form-grid" id="form-contacto" style="max-width:520px;margin:14px auto 0">
+        <div class="campo"><label>Nombre</label><input type="text" name="nombre" required></div>
+        <div class="campo"><label>Correo</label><input type="email" name="email" required></div>
+        <div class="campo"><label>Teléfono</label><input type="tel" name="telefono"></div>
+        <div class="campo"><label>Mensaje</label><textarea name="mensaje" rows="4" required></textarea></div>
+        <button class="primario block" type="submit">Enviar mensaje</button>
+      </form>
+      <p class="span-mut" style="text-align:center;margin-top:12px">¿No tenés cuenta? <a href="login.html">Entrá o registrate</a>.</p>
+    </div>
+  </section>
+
+  <footer class="footer">Luta e Dança — plataforma abierta de artes marciales y danza</footer>
+
+  <script src="web/js/api.js"></script>
+  <script>
+    const nav = document.getElementById('nav-identidad');
+    const user = API.usuario();
+    if (user) {
+      nav.innerHTML = `<a class="btn" href="dashboard.html">Mi perfil</a>
+        <a class="btn sutil" href="#" id="salir">Salir</a>`;
+      document.getElementById('salir').addEventListener('click', (e) => { e.preventDefault(); API.cerrarSesion(); location.reload(); });
+    } else {
+      nav.innerHTML = `<a class="btn" href="login.html">Iniciar sesión</a>`;
+    }
+    document.getElementById('form-contacto').addEventListener('submit', (e) => {
+      e.preventDefault();
+      API.toast('Mensaje enviado — te responderemos a la brevedad.', 'ok');
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+{
+  "name": "luta-danca-backend",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Plataforma Luta e Dança: contenido comunitario con monetización (suscripciones + compra única, pagos simulados)",
+  "scripts": {
+    "start": "node scripts/start-platform.js",
+    "start:main": "node src/server.js",
+    "dev": "node scripts/start-platform.js dev",
+    "migrate": "node scripts/migrate.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "ffmpeg-static": "^5.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.1",
+    "pg": "^8.13.1",
+    "uuid": "^11.0.3"
+  },
+  "overrides": {
+    "qs": "6.16.0"
+  }
+}

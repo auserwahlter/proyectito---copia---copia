@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Luta e Dança — Feed</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/png">
+  <link rel="stylesheet" href="web/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="inicio.html"><img class="brand-logo" src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA">LUTA<em>·DANÇA</em></a>
+    <nav class="nav-links">
+      <a href="inicio.html">Inicio</a>
+      <a href="index.html" class="activo">Feed</a>
+      <a href="foro.html">Foro</a>
+      <a href="puzzles.html">Puzzles</a>
+      <a href="encyclopedia.html">Enciclopedia</a>
+      <a href="informacion.html">Información</a>
+    </nav>
+    <a class="btn primario" href="dashboard.html#publicar" id="btn-publicar">Publicar</a>
+    <a class="btn" id="btn-torneos" href="#" target="_blank" rel="noopener noreferrer">Torneos y directos</a>
+    <form class="buscar" id="form-buscar">
+      <input type="text" id="q" placeholder="Buscar por título…" autocomplete="off">
+      <button class="primario" type="submit">Buscar</button>
+    </form>
+    <input type="text" id="tag" placeholder="#hashtag" autocomplete="off" style="max-width:130px">
+    <div id="nav-identidad"></div>
+  </header>
+
+  <div class="aviso-login" id="aviso-login" style="display:none">
+    <span>Estás navegando como invitado: puedes ver y reproducir contenido gratis. <strong>Inicia sesión o crea una cuenta</strong> para publicar, seguir creadores, pagar y participar en la comunidad.</span>
+    <div class="fila" style="min-width:220px">
+      <a class="btn" href="login.html">Crear cuenta</a>
+      <a class="btn primario" href="login.html">Iniciar sesión</a>
+    </div>
+  </div>
+
+  <main>
+    <div id="home"></div>
+    <div class="grilla" id="grilla"></div>
+    <div style="text-align:center; padding: 0 0 20px">
+      <button id="btn-mas" class="sutil" style="display:none">Cargar más</button>
+    </div>
+  </main>
+
+  <footer class="footer">Luta e Dança — plataforma abierta de artes marciales y danza</footer>
+
+  <script src="web/js/api.js"></script>
+  <script>
+    const home = document.getElementById('home');
+    const grilla = document.getElementById('grilla');
+    const btnMas = document.getElementById('btn-mas');
+    let pagina = 1;
+    let fin = false;
+    let cargando = false;
+
+    function filtrosActivos() {
+      return document.getElementById('q').value.trim() ||
+             document.getElementById('tag').value.trim();
+    }
+
+    function miniatura(item) {
+      if (item.tipo === 'directo') {
+        if (item.thumbnail_url) {
+          return `<img src="${esc(item.thumbnail_url)}" alt="" loading="lazy" onerror="this.onerror=null;this.src=API.PH">`;
+        }
+        return `<div class="placeholder">${item.stream_status === 'live' ? 'EN VIVO' : 'REPETICIÓN'}</div>`;
+      }
+      if (item.tipo === 'video') {
+        const src = item.thumbPath || API.thumb(item.filepath);
+        if (src) return `<img src="${esc(src)}" alt="" loading="lazy" onerror="this.onerror=null;this.src=API.PH">`;
+      }
+      if (item.tipo === 'imagen') {
+        const src = item.mediaPath || API.media(item.filepath);
+        if (src) return `<img src="${esc(src)}" alt="" loading="lazy" onerror="this.onerror=null;this.src=API.PH">`;
+      }
+      if (item.tipo === 'instruccional') {
+        const src = item.mediaPath || API.media(item.portada_path);
+        if (src) return `<img src="${esc(src)}" alt="" loading="lazy" onerror="this.onerror=null;this.src=API.PH">`;
+      }
+      return `<div class="placeholder">${esc(item.tipo.toUpperCase())}</div>`;
+    }
+
+    function tarjeta(item) {
+      const etiqueta = item.tipo === 'directo'
+        ? `<span class="etiqueta">${item.stream_status === 'live' ? 'EN VIVO' : 'Repetición'}</span>`
+        : item.monetizado && item.tipo_venta !== 'gratis'
+        ? `<span class="etiqueta pago">${esc(item.tipo_venta === 'suscripcion' ? 'Suscripción' : '' + API.precio(item.precio))}</span>`
+        : `<span class="etiqueta">Gratis</span>`;
+      const tags = (item.hashtags || []).slice(0, 3).map(t => `<span class="chip">#${esc(t)}</span>`).join('');
+      return `
+        <article class="tarjeta" data-tipo="${esc(item.tipo)}" data-status="${esc(item.stream_status || '')}" data-id="${esc(item.id)}">
+          <div class="mini">
+            ${miniatura(item)}
+            ${etiqueta}
+          </div>
+          <div class="cuerpo">
+            <h3>${esc(item.titulo)}</h3>
+            <div class="meta">
+              <span>${esc(item.autor_nombre || 'Autor')}</span> ·
+              <span>${API.numero(item.vistas)} vistas</span> ·
+              <span>${API.fecha(item.creado_en)}</span>
+            </div>
+            ${tags ? `<div class="tags">${tags}</div>` : ''}
+          </div>
+        </article>`;
+    }
+
+    function seccion(titulo, items) {
+      if (!items.length) return '';
+      return `<section style="margin-top:22px">
+        <h2 style="font-size:1.1rem; padding:0 20px; margin:0 0 6px">${esc(titulo)}</h2>
+        <div class="grilla">${items.map(tarjeta).join('')}</div>
+      </section>`;
+    }
+
+    async function cargarHome() {
+      grilla.innerHTML = '';
+      btnMas.style.display = 'none';
+      home.innerHTML = '<p class="hueco" style="margin:20px">Cargando…</p>';
+
+      const user = API.usuario();
+      const filas = [];
+      if (user) {
+        try {
+          const seg = await API.get('/api/feed/siguiendo?limit=12');
+          if (seg.items.length) filas.push(seccion('Siguiendo', seg.items));
+        } catch (e) { /* sin errores visibles aquí */ }
+      }
+      try {
+        const d = await API.get('/api/feed?limit=24');
+        if (d.items.length) filas.push(seccion('Reciente', d.items));
+      } catch (e) { /* sin errores visibles aquí */ }
+      home.innerHTML = filas.join('');
+      if (!home.innerHTML.trim()) home.innerHTML = '<p class="hueco">Aún no hay contenido.</p>';
+    }
+
+    async function cargarFiltrados(reset = false) {
+      if (cargando || fin) return;
+      cargando = true;
+      if (reset) { pagina = 1; fin = false; grilla.innerHTML = ''; }
+      const q = document.getElementById('q').value.trim();
+      const tag = document.getElementById('tag').value.trim().replace(/^#/, '');
+      const params = new URLSearchParams({ page: pagina, limit: 20 });
+      if (q) params.set('q', q);
+      if (tag) params.set('tag', tag);
+
+      try {
+        const data = await API.get(`/api/feed?${params}`);
+        data.items.forEach(it => grilla.insertAdjacentHTML('beforeend', tarjeta(it)));
+        pagina += 1;
+        fin = pagina > data.pagination.pages;
+        btnMas.style.display = fin ? 'none' : 'inline-block';
+      } catch (e) {
+        API.toast(e.message, 'err');
+      } finally {
+        cargando = false;
+      }
+    }
+
+    function refrescar() {
+      if (filtrosActivos()) {
+        home.innerHTML = '';
+        cargarFiltrados(true);
+      } else {
+        cargarHome();
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      const card = e.target.closest('.tarjeta');
+      if (!card) return;
+      if (card.dataset.tipo === 'directo') {
+        const page = card.dataset.status === 'live' ? 'live' : 'vod';
+        location.href = `/matctrl/${page}/${encodeURIComponent(card.dataset.id)}`;
+        return;
+      }
+      location.href = `detalle.html?tipo=${card.dataset.tipo}&id=${card.dataset.id}`;
+    });
+    btnMas.addEventListener('click', () => cargarFiltrados());
+    document.getElementById('form-buscar').addEventListener('submit', (e) => { e.preventDefault(); refrescar(); });
+    document.getElementById('tag').addEventListener('change', refrescar);
+    document.getElementById('tag').addEventListener('keydown', (e) => { if (e.key === 'Enter') refrescar(); });
+
+    function pintarIdentidad() {
+      document.getElementById('btn-torneos').href = '/matctrl/';
+      const nav = document.getElementById('nav-identidad');
+      const user = API.usuario();
+      if (user) {
+        nav.innerHTML = `
+          <a class="btn" href="notificaciones.html" id="btn-notis">Notif.</a>
+          <a class="btn" href="dashboard.html">Mi perfil</a>
+          <button class="sutil" id="btn-salir">Salir</button>`;
+        document.getElementById('btn-salir').addEventListener('click', () => { API.cerrarSesion(); location.reload(); });
+        API.get('/api/notificaciones').then(d => {
+          const n = document.getElementById('btn-notis');
+          if (n && d.no_leidas) n.textContent = `Notif. (${d.no_leidas})`;
+        }).catch(() => {});
+      } else {
+        nav.innerHTML = `<a class="btn" href="login.html">Iniciar sesión</a>`;
+      }
+    }
+
+    function esc(s) { return API.esc(s); }
+
+    pintarIdentidad();
+    const user = API.usuario();
+    document.getElementById('aviso-login').style.display = user ? 'none' : 'flex';
+    refrescar();
+  </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notificaciones — Luta e Dança</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/png">
+  <link rel="stylesheet" href="web/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="inicio.html"><img class="brand-logo" src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA">LUTA<em>·DANÇA</em></a>
+    <nav class="nav-links">
+      <a href="inicio.html">Inicio</a>
+      <a href="index.html">Feed</a>
+      <a href="foro.html">Foro</a>
+      <a href="puzzles.html">Puzzles</a>
+      <a href="encyclopedia.html">Enciclopedia</a>
+      <a href="informacion.html">Información</a>
+    </nav>
+    <div id="nav-identidad"></div>
+  </header>
+
+  <div style="max-width:820px; margin:0 auto; padding:20px">
+    <div class="fila" style="align-items:center; justify-content:space-between">
+      <h1 style="font-size:1.3rem; margin:0">Notificaciones</h1>
+      <button class="btn" id="btn-leer-todas" style="display:none">Marcar todas como leídas</button>
+    </div>
+    <div id="lista" style="display:grid; gap:10px; margin-top:16px">
+      <p class="hueco">Cargando…</p>
+    </div>
+  </div>
+
+  <footer class="footer">Luta e Dança — plataforma abierta de artes marciales y danza</footer>
+
+  <script src="web/js/api.js"></script>
+  <script>
+    const lista = document.getElementById('lista');
+    const user = API.usuario();
+
+    function pintarIdentidad() {
+      const nav = document.getElementById('nav-identidad');
+      if (user) {
+        nav.innerHTML = `
+          <a class="btn" href="dashboard.html">Mi perfil</a>
+          <button class="sutil" id="btn-salir">Salir</button>`;
+        document.getElementById('btn-salir').addEventListener('click', () => { API.cerrarSesion(); location.reload(); });
+      } else {
+        nav.innerHTML = `<a class="btn" href="login.html">Iniciar sesión</a>`;
+      }
+    }
+
+    function tablaNoti(n) {
+      return `
+        <div class="noti ${n.leida ? '' : 'no-leida'}" data-id="${n.id}" data-link="${API.esc(n.metadata ? (n.metadata.link || '') : '')}">
+          <p style="margin:0"><strong>${API.esc(n.titulo)}</strong></p>
+          <p style="margin:2px 0 0; color:var(--muted)">${API.esc(n.mensaje)}</p>
+          <div class="head">${API.fecha(n.creado_en)} · ${API.esc(n.tipo)}</div>
+        </div>`;
+    }
+
+    async function cargar() {
+      if (!user) { lista.innerHTML = `<p class="hueco">Inicia sesión para ver tus notificaciones.</p>`; return; }
+      try {
+        const data = await API.get('/api/notificaciones');
+        document.getElementById('btn-leer-todas').style.display = data.no_leidas ? 'inline-block' : 'none';
+        if (!data.items.length) {
+          lista.innerHTML = `<p class="hueco">No tienes notificaciones todavía.</p>`;
+          return;
+        }
+        lista.innerHTML = data.items.map(tablaNoti).join('');
+      } catch (e) {
+        lista.innerHTML = `<p class="hueco">${API.esc(e.message)}</p>`;
+      }
+    }
+
+    lista.addEventListener('click', async (e) => {
+      const noti = e.target.closest('.noti');
+      if (!noti) return;
+      try {
+        await API.post(`/api/notificaciones/${noti.dataset.id}/leida`);
+        noti.classList.remove('no-leida');
+      } catch (err) { /* sin bloqueo */ }
+      const link = noti.dataset.link;
+      if (link) location.href = link;
+    });
+
+    document.getElementById('btn-leer-todas').addEventListener('click', async () => {
+      try {
+        await API.post('/api/notificaciones/leer-todas');
+        document.querySelectorAll('.noti').forEach(n => n.classList.remove('no-leida'));
+        document.getElementById('btn-leer-todas').style.display = 'none';
+        API.toast('Todas leídas', 'ok');
+      } catch (e) { API.toast(e.message, 'err'); }
+    });
+
+    pintarIdentidad();
+    cargar();
+  </script>
+</body>
+</html>

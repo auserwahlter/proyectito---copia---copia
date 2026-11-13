@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar — Luta e Dança</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/png">
+  <link rel="stylesheet" href="web/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="inicio.html"><img class="brand-logo" src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA">LUTA<em>·DANÇA</em></a>
+    <nav class="nav-links">
+      <a href="inicio.html">Inicio</a>
+      <a href="index.html">Feed</a>
+      <a href="foro.html">Foro</a>
+      <a href="puzzles.html">Puzzles</a>
+      <a href="encyclopedia.html">Enciclopedia</a>
+      <a href="informacion.html">Información</a>
+    </nav>
+    <a class="btn sutil" href="index.html" style="margin-left:auto">← Volver al feed</a>
+  </header>
+
+  <div class="pagina-wrap estrecha">
+    <div class="tabs">
+      <button id="tab-login" class="activo">Iniciar sesión</button>
+      <button id="tab-registro">Crear cuenta</button>
+    </div>
+
+    <div class="panel">
+      <form id="form-login" class="form-grid">
+        <div class="campo">
+          <label>Correo</label>
+          <input type="email" id="li-email" required>
+        </div>
+        <div class="campo">
+          <label>Contraseña</label>
+          <input type="password" id="li-password" required>
+        </div>
+        <button class="primario block" type="submit">Entrar</button>
+      </form>
+
+      <form id="form-registro" class="form-grid" style="display:none">
+        <div class="campo">
+          <label>Nombre</label>
+          <input type="text" id="re-nombre" required>
+        </div>
+        <div class="campo">
+          <label>Correo</label>
+          <input type="email" id="re-email" required>
+        </div>
+        <div class="campo">
+          <label>Contraseña (mín. 6 caracteres)</label>
+          <input type="password" id="re-password" required minlength="6">
+        </div>
+        <p class="span-mut" style="margin:0">En esta plataforma todos los miembros empiezan sin roles jerárquicos: cualquiera puede publicar contenido (activando modo creador) y ganar con monetización.</p>
+        <button class="primario block" type="submit">Crear cuenta</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="web/js/api.js"></script>
+  <script>
+    const tabLogin = document.getElementById('tab-login');
+    const tabReg = document.getElementById('tab-registro');
+    const fLogin = document.getElementById('form-login');
+    const fReg = document.getElementById('form-registro');
+
+    function cambiar(vista) {
+      const esLogin = vista === 'login';
+      tabLogin.classList.toggle('activo', esLogin);
+      tabReg.classList.toggle('activo', !esLogin);
+      fLogin.style.display = esLogin ? 'grid' : 'none';
+      fReg.style.display = esLogin ? 'none' : 'grid';
+    }
+    tabLogin.addEventListener('click', () => cambiar('login'));
+    tabReg.addEventListener('click', () => cambiar('registro'));
+
+    fLogin.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const data = await API.post('/api/auth/login', {
+          email: document.getElementById('li-email').value,
+          password: document.getElementById('li-password').value,
+        });
+        API.guardarSesion(data.user, data.token);
+        API.toast(`¡Hola, ${data.user.nombre}!`, 'ok');
+        location.href = data.user.rol === 'moderador' || data.user.rol === 'admin' ? 'moderador.html' : 'dashboard.html';
+      } catch (err) { API.toast(err.message, 'err'); }
+    });
+
+    fReg.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const data = await API.post('/api/auth/register', {
+          nombre: document.getElementById('re-nombre').value,
+          email: document.getElementById('re-email').value,
+          password: document.getElementById('re-password').value,
+        });
+        API.guardarSesion(data.user, data.token);
+        API.toast('Cuenta creada. ¡Bienvenido!', 'ok');
+        location.href = 'dashboard.html';
+      } catch (err) { API.toast(err.message, 'err'); }
+    });
+  </script>
+</body>
+</html>

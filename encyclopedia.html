@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enciclopedia BJJ</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/png">
+  <link rel="stylesheet" href="web/css/app.css">
+  <link rel="stylesheet" href="encyclopedia.css">
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="inicio.html"><img class="brand-logo" src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA">LUTA<em>·DANÇA</em></a>
+  <nav class="nav-links">
+    <a href="inicio.html">Inicio</a>
+    <a href="index.html">Feed</a>
+    <a href="foro.html">Foro</a>
+    <a href="puzzles.html">Puzzles</a>
+    <a href="encyclopedia.html" class="activo">Enciclopedia</a>
+    <a href="informacion.html">Información</a>
+  </nav>
+</header>
+
+<div id="enc-app-host" style="height:calc(100vh - 100px); min-height:540px; overflow:hidden; border-radius:12px;">
+
+<!--
+  INSTRUCCIONES DE INTEGRACIÓN CON EL DASHBOARD:
+  ─────────────────────────────────────────────────
+  El contenedor padre de #app debe tener una altura definida.
+  Ejemplo mínimo con tu dashboard al lado:
+
+  <div style="display:flex; height:100vh;">
+    <aside id="dashboard" style="width:240px; flex-shrink:0;">
+      <!-- tu sidebar aquí -->
+    </aside>
+    <main style="flex:1; min-width:0; overflow:hidden;">
+      <!-- pega aquí el contenido del body de este archivo -->
+    </main>
+  </div>
+
+  Si el padre no tiene altura, el canvas mide 0px.
+-->
+
+<div id="app">
+
+  <!-- TOOLBAR (ahora position:relative, empuja el canvas hacia abajo) -->
+  <div id="toolbar">
+    <input id="search" type="text" placeholder="Search technique…" oninput="handleSearch(this.value)">
+    <div style="width:1px;height:20px;background:#222"></div>
+    <button class="filter-btn f-guard active"      data-cat="guard"       onclick="toggleFilter('guard',this)">Guard</button>
+    <button class="filter-btn f-pass active"       data-cat="pass"        onclick="toggleFilter('pass',this)">Pass</button>
+    <button class="filter-btn f-sweep active"      data-cat="sweep"       onclick="toggleFilter('sweep',this)">Sweep</button>
+    <button class="filter-btn f-submission active" data-cat="submission"  onclick="toggleFilter('submission',this)">Submission</button>
+    <button class="filter-btn f-escape active"     data-cat="escape"      onclick="toggleFilter('escape',this)">Escape</button>
+    <button class="filter-btn f-takedown active"   data-cat="takedown"    onclick="toggleFilter('takedown',this)">Takedown</button>
+    <div id="legend">
+      <span class="leg"><span class="leg-dot" style="background:#4a9eff"></span>Guard</span>
+      <span class="leg"><span class="leg-dot" style="background:#ff7a45"></span>Pass</span>
+      <span class="leg"><span class="leg-dot" style="background:#a8e063"></span>Sweep</span>
+      <span class="leg"><span class="leg-dot" style="background:#d97aff"></span>Sub</span>
+      <span class="leg"><span class="leg-dot" style="background:#ffca45"></span>Escape</span>
+      <span class="leg"><span class="leg-dot" style="background:#45e8c8"></span>TD</span>
+    </div>
+  </div>
+
+  <!-- CANVAS WRAP (ocupa el resto del alto via flex:1 en el CSS) -->
+  <div id="canvas-wrap">
+    <canvas id="c"></canvas>
+    <div id="tooltip"></div>
+    <div id="no-results">No techniques found</div>
+    <div id="minimap"><canvas id="mc"></canvas></div>
+    <div id="zoom-ctrls">
+      <button class="zbtn" onclick="zoom(1.2)">+</button>
+      <button class="zbtn" onclick="zoom(0.8)">−</button>
+      <button class="zbtn" title="Reset" onclick="resetView()">⌂</button>
+    </div>
+  </div>
+
+</div><!-- /#app -->
+
+</div><!-- /#enc-app-host -->
+
+<!-- FLASHCARD (position:fixed, fuera del flujo del dashboard) -->
+<div id="flashcard" onclick="if(event.target===this)closeFC()">
+  <div id="fc-inner">
+    <div id="fc-header">
+      <div id="fc-tag"></div>
+      <div id="fc-title"></div>
+      <div id="fc-subtitle"></div>
+    </div>
+    <div id="fc-body">
+      <nav id="fc-toc"></nav>
+      <div id="fc-content"></div>
+    </div>
+    <button id="fc-close" onclick="closeFC()">✕</button>
+  </div>
+</div>
+
+<!-- JS al final: el DOM ya existe pero el layout aún no pintó,
+     por eso el JS usa requestAnimationFrame para medir el canvas -->
+<script src="encyclopedia.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Foro — Luta e Dança</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/png">
+  <link rel="stylesheet" href="web/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="inicio.html"><img class="brand-logo" src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA">LUTA<em>·DANÇA</em></a>
+    <nav class="nav-links">
+      <a href="inicio.html">Inicio</a>
+      <a href="index.html">Feed</a>
+      <a href="foro.html" class="activo">Foro</a>
+      <a href="puzzles.html">Puzzles</a>
+      <a href="encyclopedia.html">Enciclopedia</a>
+      <a href="informacion.html">Información</a>
+    </nav>
+    <button class="btn primario" id="btn-nuevo">Nuevo post</button>
+    <div id="nav-identidad"></div>
+  </header>
+
+  <div class="aviso-login" id="aviso-login" style="display:none">
+    <span>Estás navegando como invitado: puedes leer el foro. <strong>Inicia sesión o crea una cuenta</strong> para publicar, responder y dar me gusta.</span>
+    <div class="fila" style="min-width:220px">
+      <a class="btn" href="login.html">Crear cuenta</a>
+      <a class="btn primario" href="login.html">Iniciar sesión</a>
+    </div>
+  </div>
+
+  <main>
+    <div style="padding: 14px 20px 0; max-width: 820px; margin: 0 auto;">
+      <h1 style="font-size:1.4rem; margin:0 0 6px">Foro de la comunidad</h1>
+      <p class="span-mut" style="margin:0 0 10px">Comparte técnicas, dudas y experiencias de lucha y danza.</p>
+      <div class="hashtags" id="barra-temas"></div>
+    </div>
+
+    <section id="nuevo-post" style="display:none; max-width:820px; margin: 10px auto; padding: 16px; background:var(--card); border:1px solid var(--border); border-radius:var(--radius);">
+      <h3 style="margin:0 0 10px">Crear publicación</h3>
+      <textarea class="campo" id="post-mensaje" rows="3" placeholder="¿Qué quieres compartir? Usa #hashtags…" style="width:100%"></textarea>
+      <div class="fila" style="align-items:center; margin-top:10px">
+        <input type="file" id="post-imagen" accept="image/*" class="campo">
+        <button class="primario" id="btn-publicar">Publicar</button>
+      </div>
+    </section>
+
+    <div id="lista" style="display:grid; gap:12px; max-width:820px; margin: 0 auto; padding: 16px 20px;"></div>
+    <div style="text-align:center; padding: 0 0 20px">
+      <button id="btn-mas" class="sutil" style="display:none">Cargar más</button>
+    </div>
+  </main>
+
+  <footer class="footer">Luta e Dança — plataforma abierta de artes marciales y danza</footer>
+
+  <script src="web/js/api.js"></script>
+  <script>
+    const lista = document.getElementById('lista');
+    const btnMas = document.getElementById('btn-mas');
+    const user = API.usuario();
+    let pagina = 1;
+    let fin = false;
+    let cargando = false;
+    let tema = '';
+
+    const TEMAS = ['Guardia', 'Pasada', 'Barrido', 'Sumisión', 'Técnicas', 'Coreografía', 'Base', 'Corporal', 'Dieta'];
+
+    function pintarIdentidad() {
+      const nav = document.getElementById('nav-identidad');
+      if (user) {
+        nav.innerHTML = `
+          <a class="btn" href="notificaciones.html" id="btn-notis">Notif.</a>
+          <a class="btn" href="dashboard.html">Mi perfil</a>
+          <button class="sutil" id="btn-salir">Salir</button>`;
+        document.getElementById('btn-salir').addEventListener('click', () => { API.cerrarSesion(); location.reload(); });
+        API.get('/api/notificaciones').then(d => {
+          const n = document.getElementById('btn-notis');
+          if (n && d.no_leidas) n.textContent = `Notif. (${d.no_leidas})`;
+        }).catch(() => {});
+      } else {
+        nav.innerHTML = `<a class="btn" href="login.html">Iniciar sesión</a>`;
+      }
+    }
+
+    function avatar(nombre) {
+      const ini = (nombre || '?').trim().charAt(0).toUpperCase();
+      return `<span class="avatar">${API.esc(ini)}</span>`;
+    }
+
+    function postHTML(p) {
+      const puedeBorrar = user && (Number(user.id) === Number(p.autor_id) || ['moderador', 'admin'].includes(user.rol));
+      const resp = (p.respuestas || []).map(r => `
+        <div class="com">
+          <p><strong>${API.esc(r.autor_nombre)}</strong> <span class="fecha">· ${API.fecha(r.creado_en)}</span></p>
+          <p>${API.esc(r.mensaje)}</p>
+        </div>`).join('');
+      return `
+        <article class="post" id="post-${p.id}">
+          <div class="post-head">
+            ${avatar(p.autor_nombre)}
+            <div>
+              <div class="autor">${API.esc(p.autor_nombre)}</div>
+              <div class="fecha">${API.fecha(p.creado_en)}</div>
+            </div>
+          </div>
+          <p class="mens">${API.esc(p.mensaje)}</p>
+          ${p.imagen_url ? `<img src="${API.esc(p.imagen_url)}" alt="">` : ''}
+          <div class="hashtags">${(p.hashtags || []).map(t => `<span class="chip">#${API.esc(t)}</span>`).join('')}</div>
+          <div class="acciones">
+            <button class="btn-mini ${p.liked ? 'activo-like' : ''}" data-like="${p.id}">${p.liked ? '❤' : '♡'} <span data-likes="${p.id}">${API.numero(p.likes_count)}</span></button>
+            ${user ? `<button class="btn-mini" data-resp="${p.id}">Responder</button>` : ''}
+            ${puedeBorrar ? `<button class="btn-mini peligro" data-del="${p.id}">Eliminar</button>` : ''}
+          </div>
+          <div class="resp-box" id="resp-form-${p.id}" style="display:none">
+            <input type="text" class="campo" placeholder="Escribe una respuesta…">
+            <button class="primario btn-mini" data-enviar="${p.id}">Enviar</button>
+          </div>
+          ${resp ? `<div class="respuestas">${resp}</div>` : ''}
+        </article>`;
+    }
+
+    async function cargar(reset = false) {
+      if (cargando || fin) return;
+      cargando = true;
+      if (reset) { pagina = 1; fin = false; }
+      const params = new URLSearchParams({ page: pagina, limit: 15 });
+      if (tema) params.set('hashtag', tema.toLowerCase());
+
+      try {
+        const data = await API.get(`/api/foro?${params}`);
+        if (reset) lista.innerHTML = '';
+        data.items.forEach(p => lista.insertAdjacentHTML('beforeend', postHTML(p)));
+        pagina += 1;
+        fin = pagina > data.pagination.pages;
+        btnMas.style.display = fin ? 'none' : 'inline-block';
+        if (!data.items.length && reset) {
+          lista.innerHTML = `<p class="hueco">Sin publicaciones ${tema ? 'con el tema #' + API.esc(tema) : ''}.</p>`;
+        }
+      } catch (e) {
+        API.toast(e.message, 'err');
+      } finally {
+        cargando = false;
+      }
+    }
+
+    function barraTemas() {
+      const bar = document.getElementById('barra-temas');
+      bar.innerHTML = TEMAS.map(t => `<button class="chip" data-tema="${t}" style="cursor:pointer">#${t}</button>`).join('') + `<button class="chip" data-tema="" style="cursor:pointer">Todos</button>`;
+      bar.querySelectorAll('button[data-tema]').forEach(b => b.addEventListener('click', () => {
+        tema = b.dataset.tema;
+        bar.querySelectorAll('button').forEach(x => x.style.background = '');
+        b.style.background = 'var(--accent)';
+        cargar(true);
+      }));
+    }
+
+    lista.addEventListener('click', (e) => {
+      const btnLike = e.target.closest('[data-like]');
+      if (btnLike) {
+        const id = btnLike.dataset.like;
+        API.post(`/api/foro/${id}/like`)
+          .then(r => {
+            btnLike.classList.toggle('activo-like', r.liked);
+            btnLike.innerHTML = `${r.liked ? '❤' : '♡'} <span data-likes="${id}">${API.numero(r.likes_count)}</span>`;
+          })
+          .catch(err => API.toast(err.message, 'err'));
+        return;
+      }
+      const btnDel = e.target.closest('[data-del]');
+      if (btnDel) {
+        const id = btnDel.dataset.del;
+        if (!confirm('¿Eliminar esta publicación?')) return;
+        API.del(`/api/foro/${id}`)
+          .then(() => { document.getElementById(`post-${id}`)?.remove(); API.toast('Publicación eliminada', 'ok'); })
+          .catch(err => API.toast(err.message, 'err'));
+        return;
+      }
+      const btnResp = e.target.closest('[data-resp]');
+      if (btnResp) {
+        const box = document.getElementById(`resp-form-${btnResp.dataset.resp}`);
+        box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+        return;
+      }
+      const btnEnviar = e.target.closest('[data-enviar]');
+      if (btnEnviar) {
+        const box = document.getElementById(`resp-form-${btnEnviar.dataset.enviar}`);
+        const input = box.querySelector('input');
+        const mensaje = input.value.trim();
+        if (!mensaje) return;
+        API.post(`/api/foro/${btnEnviar.dataset.enviar}/respuestas`, { mensaje })
+          .then(() => { API.toast('Respuesta publicada', 'ok'); cargar(true); })
+          .catch(err => API.toast(err.message, 'err'));
+      }
+    });
+
+    document.getElementById('btn-mas').addEventListener('click', () => cargar());
+    document.getElementById('btn-nuevo').addEventListener('click', () => {
+      const sec = document.getElementById('nuevo-post');
+      if (!user) { location.href = 'login.html'; return; }
+      sec.style.display = sec.style.display === 'none' ? 'block' : 'none';
+    });
+    document.getElementById('btn-publicar').addEventListener('click', async () => {
+      const mensaje = document.getElementById('post-mensaje').value.trim();
+      if (!mensaje) { API.toast('Escribe un mensaje', 'err'); return; }
+      const file = document.getElementById('post-imagen').files[0];
+      const fd = new FormData();
+      fd.append('mensaje', mensaje);
+      if (file) fd.append('image', file);
+      try {
+        await API.post('/api/foro', fd);
+        API.toast('Publicación creada', 'ok');
+        document.getElementById('post-mensaje').value = '';
+        document.getElementById('post-imagen').value = '';
+        document.getElementById('nuevo-post').style.display = 'none';
+        cargar(true);
+      } catch (e) { API.toast(e.message, 'err'); }
+    });
+
+    pintarIdentidad();
+    document.getElementById('aviso-login').style.display = user ? 'none' : 'flex';
+    barraTemas();
+    cargar(true);
+  </script>
+</body>
+</html>

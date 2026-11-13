@@ -1,0 +1,316 @@
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  background: var(--canvas);
+  color: var(--text);
+}
+
+body,
+button,
+input,
+select,
+textarea {
+  color-scheme: dark;
+}
+
+.workspace,
+.page-content,
+.app-footer,
+.topbar,
+.sidebar,
+.event-select,
+.live-studio,
+.notice-popover,
+.camera-select-wrap,
+.share-row input,
+.share-row button,
+.roster-toolbar select,
+.settings-form input,
+.settings-form select,
+.modal-form input,
+.modal-form select,
+.modal-form textarea,
+.wizard-field input,
+.wizard-search,
+.stream-tabs,
+.stream-card,
+.bracket-board,
+.bracket-bout,
+.table-wrap,
+.modal,
+.match-panel,
+.queue-panel,
+.lower-panel,
+.settings-panel,
+.bracket-toolbar,
+.roster-toolbar,
+.event-panel {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.topbar,
+.app-footer {
+  border-color: var(--line);
+}
+
+.topbar {
+  background: #101013;
+}
+
+.app-footer {
+  background: transparent;
+}
+
+.button.secondary,
+.icon-button,
+.clock button,
+.score-buttons button,
+.penalty-row button,
+.match-footer > button,
+.queue-item,
+.mini-round > button,
+.share-row button,
+.camera-select-wrap {
+  border-color: #34343c;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.button.secondary:hover,
+.icon-button:hover,
+.share-row button:hover {
+  border-color: #4a4a54;
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.bracket-bout,
+.queue-item,
+.mini-round > button,
+.fighter-picker label,
+.seed-item {
+  border-color: #303038;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.bracket-bout:hover,
+.queue-item:hover,
+.mini-round > button:hover,
+.fighter-picker label:hover {
+  border-color: #4a4a54;
+  background: var(--surface-3);
+}
+
+.notice-popover,
+.action-menu,
+.toast {
+  border-color: #34343c;
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: 0 18px 40px #00000090;
+}
+
+.notice-popover button,
+.modal-actions button:not(.button) {
+  border-color: #34343c;
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.modal-shade {
+  background: #000000b8;
+}
+
+.publisher-preview,
+.viewer-screen,
+.vod-player {
+  border-color: #2a2a2e;
+  background: #050506;
+}
+
+.viewer-page,
+.vod-page {
+  background:
+    radial-gradient(circle at 50% -20%, #2a1844 0%, transparent 40%),
+    #09090b;
+  color: var(--text);
+}
+
+.viewer-header,
+.vod-header {
+  border-color: #24242a;
+  background: #0c0c0f;
+}
+
+.viewer-page .button.secondary,
+.vod-page .button.secondary {
+  border-color: #34343c;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.camera-select-wrap select,
+.roster-toolbar select,
+.settings-form input,
+.settings-form select,
+.modal-form input,
+.modal-form select,
+.modal-form textarea,
+.wizard-field input,
+.wizard-search input,
+.share-row input {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: #34343c;
+}
+
+.camera-select-wrap select option,
+.roster-toolbar select option,
+.modal-form select option,
+.settings-form select option {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.modal-form input::placeholder,
+.modal-form textarea::placeholder,
+.share-row input::placeholder {
+  color: #6f6f7a;
+}
+
+.table-wrap th {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.table-wrap td {
+  border-color: #26262c;
+  color: var(--muted);
+}
+
+.table-wrap tbody tr:hover {
+  background: #1d1d22;
+}
+
+.belt-tag,
+.nav-item small,
+.queue-number {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.score-controls.red .score-buttons button:hover {
+  border-color: var(--red);
+  background: #3a1f1c;
+}
+
+.score-controls.blue .score-buttons button:hover {
+  border-color: var(--blue);
+  background: #1b2738;
+}
+
+.visibility-badge {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  padding: 4px 7px;
+  border-radius: 4px;
+  background: #000000b8;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.stream-edit-form {
+  display: grid;
+  gap: 12px;
+}
+
+.stream-edit-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.stream-edit-form input,
+.stream-edit-form select,
+.stream-edit-form textarea {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid #34343c;
+  border-radius: 6px;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.stream-edit-form textarea {
+  min-height: 74px;
+  padding: 9px 10px;
+  resize: vertical;
+}
+
+button.operator,
+button.mat-status {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+button.rules {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+button.operator {
+  width: 100%;
+  border-top: 1px solid #26262c;
+  text-align: left;
+}
+
+button.mat-status {
+  border-bottom: 1px solid #26262c;
+  text-align: left;
+}
+
+button.operator:hover strong,
+button.mat-status:hover,
+button.rules:hover {
+  color: var(--text);
+}
+
+.heading-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.save-replay-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.save-replay-toggle input {
+  accent-color: var(--accent);
+}
+
+.score-link-button {
+  margin-top: 10px;
+  align-self: flex-start;
+}

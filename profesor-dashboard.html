@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel del Profesor — Luta e Dança</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/x-icon" />
+  <link rel="stylesheet" href="student-dashboard.css" />
+  <link rel="stylesheet" href="profesor-dashboard.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+  <!-- Enciclopedia BJJ — inline, sin iframe -->
+  <link rel="stylesheet" href="encyclopedia.css" />
+  <link rel="stylesheet" href="diagramas-interactivos.css" />
+  <style>
+    #diag-canvas-host { height: 480px; min-height: 400px; margin-top: 12px; border-radius: 14px; overflow: hidden; }
+    .diag-assoc-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 640px) { .diag-assoc-row { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<div class="dashboard-shell">
+      
+  <!-- ── SIDEBAR ─────────────────────────────────────────── -->
+  <aside class="sidebar-card">
+    <div class="brand-block">
+      <img src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA" style="height:40px;width:auto;border-radius:8px;margin-bottom:6px">
+      <p class="eyebrow">LUTA E DANÇA</p>
+      <h1>Panel del profesor</h1>
+      <p class="brand-copy">Crea, publica y gestiona tu contenido técnico de grappling.</p>
+    </div>
+
+    <div class="profile-card">
+      <div class="avatar-ring">🥋</div>
+      <div>
+        <p class="profile-label">Instructor</p>
+        <h2 id="profesor-name">Nombre</h2>
+        <p class="profile-meta" id="profesor-meta">profesor</p>
+      </div>
+
+<!-- Tu barra de navegación o sidebar -->
+<nav id="sidebar" class="sidebar">
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Navegación del dashboard">
+      <a class="nav-item active" href="#" data-section="inicio"> Inicio</a>
+      <a class="nav-item" href="#" data-section="subir-video"> Subir video</a>
+      <a class="nav-item" href="#" data-section="subir-imagen"> Subir imagen</a>
+      <a class="nav-item" href="#" data-section="instruccionales">Crear instruccionales</a>
+      <a class="nav-item" href="#" data-section="diagramas"> Crear Diagramas</a>
+      <a class="nav-item" href="#" data-section="estadisticas"> Estadísticas</a>
+      <a class="nav-item" href="#" data-section="comunidad"> Comunidad</a>
+      <a class="nav-item" href="#" data-section="encyclopedia"> Enciclopedia</a>
+      <a class="nav-item" href="#" data-section="puzzles"> Puzzles</a>
+      <a class="nav-item" href="#" data-section="novedades"> Novedades</a>
+      <a class="nav-item" href="#" data-section="bodytrack"> BodyTrack</a>
+      <a class="nav-item" href="#" data-section="perfil"> Editar Perfil</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <p class="footer-label">Contenido publicado</p>
+      <div class="focus-chip" id="total-contenido">0 elementos</div>
+      <p class="footer-copy" id="footer-seguidores">0 alumnos te siguen</p>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ───────────────────────────────────────────── -->
+  <main class="main-panel">
+
+    <!-- topbar con notificaciones -->
+     <section class="dashboard-topbar">
+     <div class="dashboard-topbar-copy">
+        <p class="eyebrow">Panel creador</p>
+        <h2>Centro de contenido</h2>
+      </div> 
+       <button id="logout-btn" class="ghost-btn">Cerrar sesión</button>
+      <div class="notification-widget">
+        <button id="notification-toggle" class="notification-toggle" type="button"
+                aria-expanded="false" aria-controls="notification-panel">
+          <span class="notification-icon">🔔</span>
+          <span id="notification-badge" class="notification-badge">0</span>
+        </button>
+        <div id="notification-panel" class="notification-panel hidden"
+             role="dialog" aria-label="Notificaciones">
+          <div class="notification-panel-header">
+            <div>
+              <p class="eyebrow">Avisos</p>
+              <h3>Notificaciones</h3>
+            </div>
+            <button id="mark-all-read-btn" class="ghost-btn small-btn" type="button">
+              Marcar todas
+            </button>
+          </div>
+          <div id="notification-list" class="notification-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════ SECCIÓN: INICIO ═══════════════════ -->
+    <div id="section-inicio" class="prof-section">
+
+      <!-- hero -->
+      <section class="hero-card">
+        <div class="hero-copy">
+          <p class="eyebrow">Bienvenido de vuelta</p>
+          <h2 id="dashboard-title">Hola, instructor</h2>
+          <p class="hero-text">
+            Gestiona tus videos, imágenes e instruccionales. Tus alumnos están
+            esperando nuevo contenido técnico.
+          </p>
+          <div class="hero-badges">
+            <span class="hero-badge">✅ Cuenta verificada</span>
+            <span class="hero-badge" id="hero-estado-badge">pendiente</span>
+            <span class="hero-badge"> En línea</span>
+          </div>
+        </div>
+        <div class="hero-visual" aria-label="Resumen del instructor">
+          <div class="hero-cover prof-cover"></div>
+          <div class="hero-overlay">
+            <div class="hero-kicker">Alumnos activos</div>
+            <div class="hero-metric" id="hero-alumnos">—</div>
+            <p>siguen tu perfil en la plataforma</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- métricas rápidas -->
+      <section class="stats-grid" aria-label="Métricas del profesor">
+        <article class="stat-card large">
+          <div class="stat-header">
+            <p class="stat-label">Estado de cuenta</p>
+            <span class="stat-tag" id="estado-cuenta">pendiente</span>
+          </div>
+          <div class="progress-block">
+            <div class="progress-total">
+              <div id="progress-bar" class="progress-fill" style="width:60%"></div>
+            </div>
+            <div class="progress-copy">
+              <span>Perfil completado</span>
+              <span class="progress-note">Sube tu primer instruccional para activarte</span>
+            </div>
+          </div>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Videos subidos</p>
+          <div class="big-metric" id="total-videos">0</div>
+          <p class="stat-note">Total en la plataforma</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Imágenes subidas</p>
+          <div class="big-metric" id="total-imagenes">0</div>
+          <p class="stat-note">Recursos visuales activos</p>
+        </article>
+      </section>
+
+      <!-- accesos rápidos -->
+      <section class="content-grid">
+        <article class="panel-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Acceso rápido</p><h3>Subir contenido</h3></div>
+          </div>
+          <div class="quick-actions-grid">
+            <button class="quick-action-btn" data-goto="subir-video">
+              <span class="qa-icon">🎬</span>
+              <span>Nuevo video</span>
+            </button>
+            <button class="quick-action-btn" data-goto="subir-imagen">
+              <span class="qa-icon">🖼️</span>
+              <span>Nueva imagen</span>
+            </button>
+            <button class="quick-action-btn" data-goto="instruccionales">
+              <span class="qa-icon">📚</span>
+              <span>Instruccional</span>
+            </button>
+            <button class="quick-action-btn" data-goto="diagramas">
+              <span class="qa-icon">🗺️</span>
+              <span>Diagrama</span>
+            </button>
+          </div>
+        </article>
+
+        <article class="panel-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Actividad</p><h3>Último contenido</h3></div>
+          </div>
+          <div id="ultimo-contenido-list" class="session-list">
+            <p class="empty-state-msg">Aún no has subido contenido.</p>
+          </div>
+        </article>
+      </section>
+    </div><!-- /section-inicio -->
+    <!-- ═══════════════════ SECCIÓN: SUBIR VIDEO ═══════════════════ -->
+    <div id="section-subir-video" class="prof-section hidden">
+      <section class="hero-card compact-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Biblioteca multimedia</p>
+          <h2>Subir video instruccional</h2>
+          <p class="hero-text">
+            Sube videos en formato MP4, MOV o WebM. Máximo 500 MB por archivo.
+            Serán visibles para tus alumnos al publicarlos.
+          </p>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <!-- formulario de subida -->
+        <article class="panel-card upload-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Nuevo recurso</p><h3>Datos del video</h3></div>
+          </div>
+
+          <div class="upload-dropzone" id="video-dropzone" role="button"
+               tabindex="0" aria-label="Zona para arrastrar o seleccionar video">
+            <span class="upload-icon">🎬</span>
+            <p class="upload-title">Arrastra tu video aquí</p>
+            <p class="upload-sub">o haz clic para seleccionar</p>
+            <input type="file" id="video-file-input" accept="video/mp4,video/webm,video/quicktime"
+                   class="file-input-hidden" />
+          </div>
+          <div id="video-preview-wrap" class="media-preview-wrap hidden">
+            <video id="video-preview" controls class="media-preview"></video>
+            <p id="video-file-name" class="file-name-label"></p>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="video-titulo">Título *</label>
+              <input class="form-input" type="text" id="video-titulo"
+                     placeholder="Ej: Armbar desde guardia cerrada" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="video-categoria">Categoría / Posición</label>
+              <select class="form-input" id="video-categoria">
+                <option value="">Selecciona una posición...</option>
+                <option value="guardia_cerrada">Guardia cerrada</option>
+                <option value="guardia_abierta">Guardia abierta</option>
+                <option value="media_guardia">Media guardia</option>
+                <option value="montada">Montada</option>
+                <option value="espalda">Control de espalda</option>
+                <option value="rodilla_barriga">Rodilla en la barriga</option>
+                <option value="turtle">Turtle</option>
+                <option value="de_pie">Trabajo de pie</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="video-dificultad">Nivel de dificultad</label>
+              <select class="form-input" id="video-dificultad">
+                <option value="basico">Básico</option>
+                <option value="intermedio">Intermedio</option>
+                <option value="avanzado">Avanzado</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="video-descripcion">Descripción técnica</label>
+              <textarea class="form-input form-textarea" id="video-descripcion" rows="3"
+                        placeholder="Describe los puntos clave, grips, transiciones..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="video-hashtags">Hashtags</label>
+              <input class="form-input" type="text" id="video-hashtags"
+                     placeholder="#armbar #guardia #sumision" />
+            </div>
+          </div>
+
+          <div class="upload-progress hidden" id="video-upload-progress">
+            <div class="upload-progress-bar" id="video-progress-bar"></div>
+          </div>
+
+          <div class="form-actions">
+            <button class="ghost-btn" type="button" id="video-cancel-btn">Cancelar</button>
+            <button class="primary-btn" type="button" id="video-submit-btn">
+              ⬆️ Publicar video
+            </button>
+          </div>
+          <div id="video-feedback" class="feedback-msg hidden"></div>
+        </article>
+
+        <!-- lista de videos subidos -->
+        <article class="panel-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Biblioteca</p><h3>Mis videos</h3></div>
+            <span class="panel-pill" id="videos-count">0 videos</span>
+          </div>
+          <div id="videos-list" class="media-list">
+            <p class="empty-state-msg">Aún no has subido videos.</p>
+          </div>
+        </article>
+      </section>
+    </div><!-- /section-subir-video -->
+
+    <!-- ═══════════════════ SECCIÓN: SUBIR IMAGEN ═══════════════════ -->
+    <div id="section-subir-imagen" class="prof-section hidden">
+      <section class="hero-card compact-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Biblioteca multimedia</p>
+          <h2>Subir imagen técnica</h2>
+          <p class="hero-text">
+            Sube fotos, diagramas en imagen o capturas técnicas. Formatos: JPG, PNG, WebP.
+            Máximo 10 MB por archivo.
+          </p>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel-card upload-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Nuevo recurso</p><h3>Datos de la imagen</h3></div>
+          </div>
+
+          <div class="upload-dropzone" id="imagen-dropzone" role="button"
+               tabindex="0" aria-label="Zona para arrastrar o seleccionar imagen">
+            <span class="upload-icon">🖼️</span>
+            <p class="upload-title">Arrastra tu imagen aquí</p>
+            <p class="upload-sub">o haz clic para seleccionar</p>
+            <input type="file" id="imagen-file-input"
+                   accept="image/jpeg,image/png,image/webp"
+                   class="file-input-hidden" />
+          </div>
+          <div id="imagen-preview-wrap" class="media-preview-wrap hidden">
+            <img id="imagen-preview" alt="Previsualización" class="media-preview img-preview" />
+            <p id="imagen-file-name" class="file-name-label"></p>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="imagen-titulo">Título *</label>
+              <input class="form-input" type="text" id="imagen-titulo"
+                     placeholder="Ej: Diagrama de escape de montada" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="imagen-tipo">Tipo de imagen</label>
+              <select class="form-input" id="imagen-tipo">
+                <option value="diagrama">Diagrama técnico</option>
+                <option value="foto_posicion">Foto de posición</option>
+                <option value="captura">Captura de análisis</option>
+                <option value="infografia">Infografía</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="imagen-descripcion">Descripción</label>
+              <textarea class="form-input form-textarea" id="imagen-descripcion" rows="3"
+                        placeholder="Explica qué muestra la imagen..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="imagen-hashtags">Hashtags</label>
+              <input class="form-input" type="text" id="imagen-hashtags"
+                     placeholder="#escape #montada #diagrama" />
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="ghost-btn" type="button" id="imagen-cancel-btn">Cancelar</button>
+            <button class="primary-btn" type="button" id="imagen-submit-btn">
+              ⬆️ Publicar imagen
+            </button>
+          </div>
+          <div id="imagen-feedback" class="feedback-msg hidden"></div>
+        </article>
+
+        <!-- galería -->
+        <article class="panel-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Galería</p><h3>Mis imágenes</h3></div>
+            <span class="panel-pill" id="imagenes-count">0 imágenes</span>
+          </div>
+          <div id="imagenes-grid" class="imagenes-gallery">
+            <p class="empty-state-msg">Aún no has subido imágenes.</p>
+          </div>
+        </article>
+      </section>
+    </div><!-- /section-subir-imagen -->
+
+    <!-- ═══════════════════ SECCIÓN: INSTRUCCIONALES ═══════════════════ -->
+    <div id="section-instruccionales" class="prof-section hidden">
+      <section class="hero-card compact-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Cursos y guías</p>
+          <h2>Instruccionales</h2>
+          <p class="hero-text">
+            Empaqueta tus videos en cursos estructurados. Los alumnos podrán seguir
+            tus instruccionales como un recorrido de aprendizaje ordenado.
+          </p>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel-card upload-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Nuevo curso</p><h3>Crear instruccional</h3></div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="inst-titulo">Título del instruccional *</label>
+              <input class="form-input" type="text" id="inst-titulo"
+                     placeholder="Ej: Sistema de juego desde guardia de araña" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inst-descripcion">Descripción general</label>
+              <textarea class="form-input form-textarea" id="inst-descripcion" rows="3"
+                        placeholder="¿Qué aprenderá el alumno en este instruccional?"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inst-nivel">Nivel objetivo</label>
+              <select class="form-input" id="inst-nivel">
+                <option value="principiante">Principiante (blanco–azul)</option>
+                <option value="intermedio">Intermedio (morado)</option>
+                <option value="avanzado">Avanzado (café–negro)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inst-categoria">Categoría principal</label>
+              <select class="form-input" id="inst-categoria">
+                <option value="guardia">Guardia</option>
+                <option value="pasaje">Pasaje de guardia</option>
+                <option value="sumisiones">Sumisiones</option>
+                <option value="transiciones">Transiciones</option>
+                <option value="defensa">Defensa</option>
+                <option value="pie">Trabajo de pie</option>
+                <option value="competicion">Estrategia de competición</option>
+              </select>
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label">Videos incluidos</label>
+              <div id="inst-videos-selector" class="videos-selector">
+                <p class="empty-state-msg" id="inst-videos-empty">
+                  Primero sube videos desde la sección "Subir video".
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="ghost-btn" type="button" id="inst-cancel-btn">Cancelar</button>
+            <button class="primary-btn" type="button" id="inst-submit-btn">
+              📚 Crear instruccional
+            </button>
+          </div>
+          <div id="inst-feedback" class="feedback-msg hidden"></div>
+        </article>
+
+        <article class="panel-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Mis cursos</p><h3>Instruccionales publicados</h3></div>
+            <span class="panel-pill" id="inst-count">0 cursos</span>
+          </div>
+          <div id="inst-list" class="media-list">
+            <p class="empty-state-msg">No has creado instruccionales aún.</p>
+          </div>
+        </article>
+      </section>
+    </div><!-- /section-instruccionales -->
+
+    <!-- ═══════════════════ SECCIÓN: DIAGRAMAS INTERACTIVOS ═══════════════════ -->
+    <div id="section-diagramas" class="prof-section hidden">
+      <section class="hero-card compact-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Diagramas interactivos</p>
+          <h2>Mapas de conocimiento</h2>
+          <p class="hero-text">
+            Construye diagramas con nodos conectados: posiciones, transiciones y conceptos de Grappling y Jiu-Jitsu.
+            Asócialos a instruccionales o referencias de la enciclopedia.
+          </p>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel-card upload-card full-panel">
+          <div class="panel-header">
+            <div><p class="eyebrow">Editor</p><h3 id="diag-form-title">Nuevo diagrama</h3></div>
+            <span class="panel-pill" id="diag-edit-badge" style="display:none">Editando</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="diag-titulo">Título *</label>
+              <input class="form-input" type="text" id="diag-titulo"
+                     placeholder="Ej: Sistema de guardia cerrada" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="diag-descripcion">Descripción</label>
+              <textarea class="form-input form-textarea" id="diag-descripcion" rows="2"
+                        placeholder="Contexto del mapa de conocimiento..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="diag-tipo">Tipo</label>
+              <select class="form-input" id="diag-tipo">
+                <option value="arbol_decision">Árbol de decisión</option>
+                <option value="flujo_posiciones">Flujo de posiciones</option>
+                <option value="sistema_juego">Sistema de juego</option>
+                <option value="cadena_sumision">Cadena de sumisiones</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="diag-publicado">Estado</label>
+              <select class="form-input" id="diag-publicado">
+                <option value="1">Publicado</option>
+                <option value="0">Borrador</option>
+              </select>
+            </div>
+            <div class="form-group full-width diag-assoc-row">
+              <div>
+                <label class="form-label" for="diag-instruccional">Instruccional vinculado</label>
+                <select class="form-input" id="diag-instruccional">
+                  <option value="">— Ninguno —</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" for="diag-enciclopedia">Ref. enciclopedia</label>
+                <input class="form-input" id="diag-enciclopedia" placeholder="Ej: closed-guard, armbar" />
+              </div>
+            </div>
+            <div class="form-group full-width">
+              <label class="form-label">Lienzo interactivo</label>
+              <div id="diag-canvas-host"></div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="ghost-btn" type="button" id="diag-cancel-btn">Cancelar</button>
+            <button class="primary-btn" type="button" id="diag-submit-btn">🗺️ Guardar diagrama</button>
+          </div>
+          <div id="diag-feedback" class="feedback-msg hidden"></div>
+        </article>
+
+        <article class="panel-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Mis mapas</p><h3>Diagramas creados</h3></div>
+            <span class="panel-pill" id="diag-count">0 diagramas</span>
+          </div>
+          <div id="diag-list" class="media-list">
+            <p class="empty-state-msg">No has creado diagramas aún.</p>
+          </div>
+        </article>
+      </section>
+    </div><!-- /section-diagramas -->
+
+    <!-- ═══════════════════ SECCIÓN: ESTADÍSTICAS ═══════════════════ -->
+    <div id="section-estadisticas" class="prof-section hidden">
+      <section class="hero-card compact-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Analítica</p>
+          <h2>Estadísticas de impacto</h2>
+          <p class="hero-text">
+            Visualiza el alcance de tu contenido: reproducciones, seguidores y
+            engagement de tus instruccionales.
+          </p>
+        </div>
+      </section>
+
+      <section class="stats-grid" aria-label="Estadísticas del profesor">
+        <article class="stat-card large">
+          <p class="stat-label">Visualizaciones totales</p>
+          <div class="big-metric" id="stat-vistas-totales">—</div>
+          <p class="stat-note">Suma de videos, imágenes e instruccionales</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Seguidores totales</p>
+          <div class="big-metric" id="stat-seguidores">—</div>
+          <p class="stat-note">Alumnos suscritos a tu perfil</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Videos publicados</p>
+          <div class="big-metric" id="stat-videos">—</div>
+          <p class="stat-note" id="stat-videos-vistas">— visualizaciones</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Imágenes publicadas</p>
+          <div class="big-metric" id="stat-imagenes">—</div>
+          <p class="stat-note" id="stat-imagenes-vistas">— visualizaciones</p>
+        </article>
+        <article class="stat-card">
+          <p class="stat-label">Instruccionales</p>
+          <div class="big-metric" id="stat-inst">—</div>
+          <p class="stat-note" id="stat-inst-vistas">— visualizaciones</p>
+        </article>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Evolución</p><h3>Visualizaciones por día</h3></div>
+            <select class="form-input small-select" id="estadisticas-rango" style="width:auto">
+              <option value="7">Últimos 7 días</option>
+              <option value="30" selected>Últimos 30 días</option>
+              <option value="90">Últimos 90 días</option>
+            </select>
+          </div>
+          <div style="position:relative;height:280px">
+            <canvas id="chart-vistas-tiempo"></canvas>
+          </div>
+          <p id="chart-vistas-tiempo-empty" class="empty-state-msg hidden">Aún no hay visualizaciones registradas en este rango.</p>
+        </article>
+
+        <article class="panel-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Comparativa</p><h3>Visualizaciones por tipo de contenido</h3></div>
+          </div>
+          <div style="position:relative;height:280px;max-width:340px;margin:0 auto">
+            <canvas id="chart-vistas-tipo"></canvas>
+          </div>
+          <p id="chart-vistas-tipo-empty" class="empty-state-msg hidden">Aún no hay visualizaciones registradas.</p>
+        </article>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel-card full-panel">
+          <div class="panel-header">
+            <div><p class="eyebrow">Rendimiento</p><h3>Contenido más visto</h3></div>
+            <div class="filter-row">
+              <select class="form-input small-select" id="top-contenido-tipo" style="width:auto">
+                <option value="todos">Todos</option>
+                <option value="video">Videos</option>
+                <option value="imagen">Imágenes</option>
+                <option value="instruccional">Instruccionales</option>
+              </select>
+            </div>
+          </div>
+          <div id="top-contenido-list" class="media-list">
+            <p class="empty-state-msg">Las estadísticas estarán disponibles una vez tengas contenido publicado.</p>
+          </div>
+        </article>
+      </section>
+    </div><!-- /section-estadisticas -->
+
+    <!-- ═══════════════════ SECCIÓN: COMUNIDAD ═══════════════════ -->
+    <div id="section-comunidad" class="prof-section hidden">
+      <section class="dashboard-body-grid">
+        <div class="main-stream">
+          <section class="bottom-grid">
+            <article class="panel-card insight-panel">
+              <div class="panel-header">
+                <div><p class="eyebrow">Perfil público</p><h3>Mi cuenta</h3></div>
+                <button id="logout-btn" class="ghost-btn" type="button">Cerrar sesión</button>
+              </div>
+              <div class="profile-stats">
+                <div class="mini-stat">
+                  <span class="mini-label">Rol</span>
+                  <strong>Profesor</strong>
+                </div>
+                <div class="mini-stat">
+                  <span class="mini-label">Estado</span>
+                  <strong id="payment-method">—</strong>
+                </div>
+                <div class="mini-stat">
+                  <span class="mini-label">Miembro desde</span>
+                  <strong id="account-status">—</strong>
+                </div>
+              </div>
+            </article>
+          </section>
+        </div>
+
+        <!-- foro — igual que en student-dashboard -->
+        <aside class="forum-rail" aria-label="Foro comunitario">
+          <article class="panel-card forum-panel">
+            <div class="forum-header">
+              <div><p class="eyebrow">Comunidad</p><h3>Foro de estudiantes</h3></div>
+              <span class="forum-live-pill">● En vivo</span>
+            </div>
+            <div class="forum-prompt-box">
+              <p class="forum-prompt-title">Publica un consejo técnico</p>
+              <p class="forum-prompt-copy">Comparte tu conocimiento con la comunidad.</p>
+              <label class="sr-only" for="forum-message">Escribe tu mensaje</label>
+              <textarea id="forum-message" class="forum-textarea" rows="4"
+                        placeholder="Escribe un consejo o responde una pregunta..."></textarea>
+              <label class="file-input-label" for="forum-image-input">Adjuntar imagen</label>
+              <input id="forum-image-input" class="forum-image-input" type="file" accept="image/*">
+              <div id="forum-image-preview-wrap" class="forum-image-preview-wrap hidden">
+                <img id="forum-image-preview" alt="Previsualización de imagen" />
+                <button id="forum-image-remove-btn" class="icon-btn secondary" type="button">Eliminar</button>
+              </div>
+              <div class="forum-prompt-actions">
+                <span class="forum-hint">Usa hashtags como #guardia #movilidad</span>
+                <button id="publish-forum-btn" class="ghost-btn small-btn" type="button">
+                  Publicar
+                </button>
+              </div>
+            </div>
+            <div id="forum-filter-chips" class="forum-filter-chips" aria-label="Filtros"></div>
+            <div id="forum-post-list" class="forum-post-list" aria-live="polite"></div>
+          </article>
+        </aside>
+      </section>
+    </div><!-- /section-comunidad -->
+
+    <!-- ═══════════════════ SECCIÓN: PERFIL ═══════════════════ -->
+    <div id="section-perfil" class="prof-section hidden">
+      <section class="content-grid">
+
+        <!-- Editar datos personales -->
+        <article class="panel-card upload-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Mi cuenta</p><h3>Editar perfil</h3></div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="perfil-nombre">Nombre completo</label>
+              <input class="form-input" type="text" id="perfil-nombre" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="perfil-email">Correo electrónico</label>
+              <input class="form-input" type="email" id="perfil-email" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="perfil-password-actual">Contraseña actual <span style="font-weight:400;text-transform:none">(requerida para guardar)</span></label>
+              <input class="form-input" type="password" id="perfil-password-actual" placeholder="Ingresa tu contraseña actual" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="perfil-password-nueva">Nueva contraseña <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+              <input class="form-input" type="password" id="perfil-password-nueva" placeholder="Dejar vacío para no cambiarla" />
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="primary-btn" type="button" id="perfil-save-btn">💾 Guardar cambios</button>
+          </div>
+          <div id="perfil-feedback" class="feedback-msg hidden"></div>
+        </article>
+
+        <!-- Info de cuenta + registro de moderador -->
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+          <article class="panel-card">
+            <div class="panel-header">
+              <div><p class="eyebrow">Información</p><h3>Datos actuales</h3></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.65rem;padding:0.25rem 0;">
+              <div class="mini-stat"><span class="mini-label">Nombre</span><strong id="perfil-info-nombre">—</strong></div>
+              <div class="mini-stat"><span class="mini-label">Email</span><strong id="perfil-info-email">—</strong></div>
+              <div class="mini-stat"><span class="mini-label">Rol</span><strong>Profesor</strong></div>
+              <div class="mini-stat"><span class="mini-label">Estado</span><strong id="perfil-info-estado">—</strong></div>
+              <div class="mini-stat"><span class="mini-label">Miembro desde</span><strong id="perfil-info-desde">—</strong></div>
+            </div>
+          </article>
+
+          <!-- Convertirse en moderador -->
+          <article class="panel-card">
+            <div class="panel-header">
+              <div><p class="eyebrow">Acceso especial</p><h3>Cuenta de moderador</h3></div>
+            </div>
+            <p style="font-size:0.83rem;color:var(--text-muted,#888);margin:0 0 1rem">
+              El moderador tiene acceso al panel de administración: gestión de usuarios,
+              contenido, estados y foro. Tu cuenta de profesor se convertirá en moderador.
+            </p>
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label class="form-label" for="mod-codigo">Código de autorización</label>
+                <input class="form-input" type="password" id="mod-codigo" placeholder="Solicita el código al administrador" />
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="primary-btn" type="button" id="mod-register-btn" style="background:#6d28d9">🛡️ Convertirme en moderador</button>
+            </div>
+            <div id="mod-register-feedback" class="feedback-msg hidden"></div>
+          </article>
+        </div>
+
+      </section>
+    </div><!-- /section-perfil -->
+
+    <!-- ═══════════════════ SECCIÓN: ENCICLOPEDIA ═══════════════════ -->
+    <div id="section-encyclopedia" class="prof-section hidden">
+
+      <!--
+        #enc-app-host: contenedor que le da altura al grafo.
+        Al estar dentro del main-panel (que ya tiene scroll propio),
+        usamos una altura fija generosa. El canvas se adapta a ella
+        via flex:1 definido en encyclopedia.css sobre #canvas-wrap.
+      -->
+      <div id="enc-app-host" style="
+        width: 100%;
+        height: calc(100vh - 120px);
+        min-height: 540px;
+        border-radius: 12px;
+        overflow: hidden;
+      ">
+
+        <div id="app">
+
+          <!-- TOOLBAR -->
+          <div id="toolbar">
+            <input id="search" type="text" placeholder="Search technique…"
+                   oninput="handleSearch(this.value)">
+            <div style="width:1px;height:20px;background:#222"></div>
+            <button class="filter-btn f-guard active"      data-cat="guard"
+                    onclick="toggleFilter('guard',this)">Guard</button>
+            <button class="filter-btn f-pass active"       data-cat="pass"
+                    onclick="toggleFilter('pass',this)">Pass</button>
+            <button class="filter-btn f-sweep active"      data-cat="sweep"
+                    onclick="toggleFilter('sweep',this)">Sweep</button>
+            <button class="filter-btn f-submission active" data-cat="submission"
+                    onclick="toggleFilter('submission',this)">Submission</button>
+            <button class="filter-btn f-escape active"     data-cat="escape"
+                    onclick="toggleFilter('escape',this)">Escape</button>
+            <button class="filter-btn f-takedown active"   data-cat="takedown"
+                    onclick="toggleFilter('takedown',this)">Takedown</button>
+            <div id="legend">
+              <span class="leg"><span class="leg-dot" style="background:#4a9eff"></span>Guard</span>
+              <span class="leg"><span class="leg-dot" style="background:#ff7a45"></span>Pass</span>
+              <span class="leg"><span class="leg-dot" style="background:#a8e063"></span>Sweep</span>
+              <span class="leg"><span class="leg-dot" style="background:#d97aff"></span>Sub</span>
+              <span class="leg"><span class="leg-dot" style="background:#ffca45"></span>Escape</span>
+              <span class="leg"><span class="leg-dot" style="background:#45e8c8"></span>TD</span>
+            </div>
+          </div>
+
+          <!-- CANVAS -->
+          <div id="canvas-wrap">
+            <canvas id="c"></canvas>
+            <div id="tooltip"></div>
+            <div id="no-results">No techniques found</div>
+            <div id="minimap"><canvas id="mc"></canvas></div>
+            <div id="zoom-ctrls">
+              <button class="zbtn" onclick="zoom(1.2)">+</button>
+              <button class="zbtn" onclick="zoom(0.8)">−</button>
+              <button class="zbtn" title="Reset" onclick="resetView()">⌂</button>
+            </div>
+          </div>
+
+        </div><!-- /#app -->
+
+      </div><!-- /#enc-app-host -->
+
+    </div><!-- /section-encyclopedia -->
+
+    <!-- FLASHCARD (position:fixed, fuera del flujo del dashboard) -->
+    <div id="flashcard" onclick="if(event.target===this)closeFC()">
+      <div id="fc-inner">
+        <div id="fc-header">
+          <div id="fc-tag"></div>
+          <div id="fc-title"></div>
+          <div id="fc-subtitle"></div>
+        </div>
+        <div id="fc-body">
+          <nav id="fc-toc"></nav>
+          <div id="fc-content"></div>
+        </div>
+        <button id="fc-close" onclick="closeFC()">✕</button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECCIÓN: PUZZLES ═══════════════════ -->
+    <div id="section-puzzles" class="prof-section hidden">
+      <section class="hero-card compact-hero">
+      </section>
+      <section class="content-grid">
+        <iframe style="width:100%;height:600px;border:none;border-radius:8px;" 
+                src="puzzles.html" title="Puzzles"></iframe>
+      </section>
+    </div><!-- /section-puzzles -->
+
+    <!-- ═══════════════════ SECCIÓN: NOVEDADES ═══════════════════ -->
+    <div id="section-novedades" class="prof-section hidden">
+      <section class="hero-card compact-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Contenido reciente</p>
+          <h2>Novedades de la plataforma</h2>
+          <p class="hero-text">
+            Últimos videos, imágenes y diagramas publicados por profesores.
+          </p>
+        </div>
+      </section>
+      <section class="content-grid">
+        <article class="panel-card full-panel">
+          <div class="panel-header">
+            <div><p class="eyebrow">Reciente</p><h3>Contenido de profesores</h3></div>
+          </div>
+          <div id="novedades-list" class="media-list">
+            <p class="empty-state-msg">Cargando novedades…</p>
+          </div>
+        </article>
+      </section>
+    </div><!-- /section-novedades -->
+
+    </main>
+  </div>
+
+<!--<script src="jquery-3.5.1.min.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsplumb@2.15.6/dist/js/jsplumb.min.js"></script>
+<script src="flowchart-fixed.js"></script>-->
+<script src="encyclopedia.js"></script>
+<script src="diagramas-interactivos.js"></script>
+<script src="profesor-dashboard.js"></script>
+<script src="student-dashboard.js"></script>
+
+<!-- ══════════ MODAL DE COMENTARIOS ══════════ -->
+<div id="comentarios-modal-overlay" class="com-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="com-modal-title">
+  <div class="com-modal">
+
+    <div class="com-modal-header">
+      <div>
+        <p class="eyebrow" id="com-modal-eyebrow">Comentarios</p>
+        <h3 id="com-modal-title">—</h3>
+      </div>
+      <button class="com-close-btn" id="com-close-btn" aria-label="Cerrar">✕</button>
+    </div>
+
+    <!-- Hilo de comentarios -->
+    <div class="com-thread" id="com-thread">
+      <p class="com-empty" id="com-empty-msg">Aún no hay comentarios. ¡Sé el primero!</p>
+    </div>
+
+    <!-- Formulario nuevo comentario -->
+    <div class="com-compose">
+      <div class="com-reply-banner hidden" id="com-reply-banner">
+        <span id="com-reply-label">Respondiendo a …</span>
+        <button class="com-reply-cancel" id="com-reply-cancel">✕</button>
+      </div>
+      <div class="com-compose-row">
+        <div class="com-avatar" id="com-my-avatar">?</div>
+        <textarea class="com-input" id="com-input"
+          placeholder="Escribe un comentario…"
+          rows="2" maxlength="2000"></textarea>
+        <button class="com-send-btn" id="com-send-btn">Enviar</button>
+      </div>
+      <div class="com-char-count"><span id="com-char-left">2000</span> caracteres restantes</div>
+      <div id="com-feedback" class="feedback-msg hidden"></div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

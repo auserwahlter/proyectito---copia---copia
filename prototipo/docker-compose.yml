@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: matctrl
+      POSTGRES_PASSWORD: matctrl
+      POSTGRES_DB: matctrl
+    ports:
+      - "5432:5432"
+    volumes:
+      - matctrl-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U matctrl -d matctrl"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest-ffmpeg
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8888:8888"
+      - "8889:8889"
+      - "8189:8189/udp"
+      - "9996:9996"
+      - "9997:9997"
+      - "1935:1935"
+      - "8554:8554"
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro
+      - ./data/recordings:/recordings
+      - ./data/thumbnails:/thumbnails
+
+volumes:
+  matctrl-db:

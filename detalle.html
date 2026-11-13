@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contenido — Luta e Dança</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/png">
+  <link rel="stylesheet" href="web/css/app.css">
+  <link rel="stylesheet" href="diagramas-interactivos.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="inicio.html"><img class="brand-logo" src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA">LUTA<em>·DANÇA</em></a>
+    <nav class="nav-links">
+      <a href="inicio.html">Inicio</a>
+      <a href="index.html">Feed</a>
+      <a href="foro.html">Foro</a>
+      <a href="puzzles.html">Puzzles</a>
+      <a href="encyclopedia.html">Enciclopedia</a>
+      <a href="informacion.html">Información</a>
+    </nav>
+    <a class="btn primario" href="dashboard.html#publicar">Publicar</a>
+    <div id="nav-identidad" style="margin-left:auto"></div>
+  </header>
+
+  <div class="pagina-wrap estrecha" id="pagina">
+    <div class="hueco">Cargando contenido…</div>
+  </div>
+
+  <footer class="footer">Luta e Dança</footer>
+
+  <script src="web/js/api.js"></script>
+  <script src="diagramas-interactivos.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const TIPO = params.get('tipo');
+    const ID = params.get('id');
+    const pagina = document.getElementById('pagina');
+    let AUTOR_ID = null;
+    let dgViewers = [];
+    let instPendientes = [];
+
+    function grafoNormalizado(raw) {
+      if (typeof normalizarGrafo === 'function') return normalizarGrafo(raw);
+      try { return JSON.parse(typeof raw === 'string' ? raw : JSON.stringify(raw || {})); }
+      catch (_e) { return { nodes: [], edges: [], legacy_text: String(raw || '') }; }
+    }
+
+    function instMediaHtml(tipo, meta) {
+      if (!meta) return `<p class="span-mut">Elemento no disponible.</p>`;
+      const enlace = `<a href="detalle.html?tipo=${tipo}&id=${meta.id}">Ver ${tipo} #${meta.id}</a>`;
+      if (tipo === 'video') {
+        if (!meta.filepath) {
+          return `<p class="span-mut">${API.esc(meta.titulo || 'Video #' + meta.id)} · acceso restringido. ${enlace}</p>`;
+        }
+        return `<video controls preload="metadata" src="${API.esc(API.media(meta.filepath))}" ${meta.portada_path ? `poster="${API.esc(API.thumb(meta.portada_path))}"` : ''}></video>`;
+      }
+      if (tipo === 'imagen') {
+        if (!meta.filepath) {
+          return `<p class="span-mut">${API.esc(meta.titulo || 'Imagen #' + meta.id)} · acceso restringido. ${enlace}</p>`;
+        }
+        return `<div class="detalle-media"><img src="${API.esc(API.media(meta.filepath))}" alt="${API.esc(meta.titulo || '')}" onerror="this.onerror=null;this.src=API.PH"></div>`;
+      }
+      if (tipo === 'diagrama') {
+        if (!meta.nodos) {
+          return `<p class="span-mut">${API.esc(meta.titulo || 'Diagrama #' + meta.id)} · acceso restringido. ${enlace}</p>`;
+        }
+        const idx = instPendientes.length;
+        instPendientes.push(meta.nodos);
+        return `<div class="dg-embed" data-dg="${idx}" style="height:420px;min-height:380px;border-radius:12px;overflow:hidden;border:1px solid var(--border)"></div>`;
+      }
+      return '';
+    }
+
+    function navIdentidad() {
+      const nav = document.getElementById('nav-identidad');
+      const user = API.usuario();
+      if (user) {
+        nav.innerHTML = `<a class="btn" href="notificaciones.html" id="btn-notis">Notif.</a><a class="btn" href="dashboard.html">Mi perfil</a><button class="sutil" id="salir">Salir</button>`;
+        API.get('/api/notificaciones').then(d => {
+          const n = document.getElementById('btn-notis');
+          if (n && d.no_leidas) n.textContent = `Notif. (${d.no_leidas})`;
+        }).catch(() => {});
+      }
+      else nav.innerHTML = `<a class="btn primario" href="login.html">Iniciar sesión</a>`;
+      const b = document.getElementById('salir');
+      if (b) b.addEventListener('click', () => { API.cerrarSesion(); location.reload(); });
+    }
+
+    function cajaSuscripcion(autorId) {
+      const cont = document.getElementById('lista-planes');
+      if (!cont) return;
+      API.get(`/api/monetizacion/planes?creador=${autorId}`).then(data => {
+        if (!data.items.length) {
+          cont.innerHTML = `<p class="span-mut">Este creador aún no ofrece planes de suscripción.</p>`;
+          return;
+        }
+        cont.innerHTML = data.items.map(p => `
+          <div class="cuadro">
+            <h4>${API.esc(p.nombre)}</h4>
+            <p class="span-mut">${API.esc(p.descripcion || '')}</p>
+            <div class="fila" style="align-items:center">
+              <span style="font-weight:700">${API.precio(p.precio)} / ${API.esc(p.periodicidad)}</span>
+              <button class="primario" data-plan="${p.id}">Suscribirme</button>
+            </div>
+          </div>`).join('');
+        cont.querySelectorAll('button[data-plan]').forEach(b => b.addEventListener('click', async () => {
+          try {
+            const r = await API.post('/api/monetizacion/suscripciones', { plan_id: Number(b.dataset.plan) });
+            API.toast(`Suscripción activada (${r.item.referencia})`, 'ok');
+            location.reload();
+          } catch (e) { API.toast(e.message, 'err'); }
+        }));
+      }).catch(e => API.toast(e.message, 'err'));
+    }
+
+    function muroPago(item) {
+      if (!item.monetizado) return '';
+      const user = API.usuario();
+      if (item.tiene_acceso) return '';
+      if (item.tipo_venta === 'suscripcion') {
+        return `
+          <div class="muro-pago">
+            <p class="span-mut">Contenido exclusivo del creador.</p>
+            <div id="lista-planes"></div>
+            ${user ? '' : '<p><a href="login.html" class="btn">Inicia sesión para suscribirte</a></p>'}
+          </div>`;
+      }
+      if (item.tipo_venta === 'pago_unico') {
+        return `
+          <div class="muro-pago">
+            <span class="precio">${API.precio(item.precio)}</span>
+            <p class="span-mut">Pago único simulado, acceso de por vida.</p>
+            ${user ? '<button class="primario block" id="btn-comprar">Comprar</button>'
+                  : '<a class="btn primario block" href="login.html">Inicia sesión para comprar</a>'}
+          </div>`;
+      }
+      return '';
+    }
+
+    function render(item) {
+      const user = API.usuario();
+      const kind = TIPO;
+      let media = '';
+      if (kind === 'video') {
+        media = item.tiene_acceso || item.tipo_venta === 'gratis'
+          ? `<video controls preload="metadata" src="${API.esc(API.media(item.filepath))}" ${item.filepath ? `poster="${API.esc(API.thumb(item.filepath))}"` : ''}></video>`
+          : muroPago(item);
+      } else if (kind === 'imagen') {
+        media = item.tiene_acceso || item.tipo_venta === 'gratis'
+          ? `<div class="detalle-media"><img src="${API.esc(API.media(item.filepath))}" alt="" onerror="this.onerror=null;this.src=API.PH"></div>`
+          : muroPago(item);
+      } else if (kind === 'instruccional' && (item.portada_path || item.filepath)) {
+        media = `<div class="detalle-media"><img src="${API.esc(API.media(item.portada_path || item.filepath))}" alt="" onerror="this.onerror=null;this.src=API.PH"></div>`;
+      }
+
+      let cuerpo = '';
+      let grafoDiag = null;
+      dgViewers.forEach(v => { try { v.destroy(); } catch (_e) {} });
+      dgViewers = [];
+      instPendientes = [];
+      if (kind === 'video') {
+        cuerpo = item.descripcion ? `<p>${API.esc(item.descripcion)}</p>` : '';
+        if (item.pasos && item.pasos.length) cuerpo += `<div class="cuadro"><h4>Pasos</h4>${renderPasos(item.pasos, item)}</div>`;
+      } else if (kind === 'instruccional') {
+        const accesible = !item.monetizado || item.tiene_acceso;
+        const piezas = [];
+        if (item.secciones && item.secciones.length) {
+          item.secciones.forEach(s => {
+            const meta = s.item_meta && typeof s.item_meta === 'object' && Object.keys(s.item_meta).length ? s.item_meta : null;
+            piezas.push(`
+              <div class="cuadro" style="margin-top:12px">
+                <div class="fila" style="align-items:center;gap:8px">
+                  <span class="chip">${API.esc(s.tipo)}</span>
+                  <strong style="flex:1">${API.esc(s.titulo || '')}</strong>
+                </div>
+                ${s.descripcion ? `<p style="margin:8px 0 0">${API.esc(s.descripcion)}</p>` : ''}
+                ${s.nota ? `<p class="span-mut" style="margin:4px 0 0">⚠ ${API.esc(s.nota)}</p>` : ''}
+                <div style="margin-top:10px">${instMediaHtml(s.tipo, meta)}</div>
+              </div>`);
+          });
+        } else {
+          [
+            { tipo: 'video', lista: item.videos || [] },
+            { tipo: 'imagen', lista: item.imagenes || [] },
+            { tipo: 'diagrama', lista: item.diagramas || [] },
+          ].forEach(g => g.lista.forEach(m => {
+            piezas.push(`
+              <div class="cuadro" style="margin-top:12px">
+                <div class="fila" style="align-items:center;gap:8px">
+                  <span class="chip">${g.tipo}</span>
+                  <strong style="flex:1">${API.esc(m.titulo || '')}</strong>
+                </div>
+                <div style="margin-top:10px">${instMediaHtml(g.tipo, m)}</div>
+              </div>`);
+          }));
+        }
+        cuerpo = `
+          <div class="cuadro"><h4>Instruccional · ${API.esc(item.nivel || '')}</h4>
+            <p>${API.esc(item.descripcion || '')}</p></div>
+          ${piezas.join('')}`;
+        if (!accesible) cuerpo += muroPago(item);
+      } else if (kind === 'diagrama') {
+        const accesible = !item.monetizado || item.tiene_acceso;
+        if (accesible) {
+          grafoDiag = grafoNormalizado(item.nodos);
+          cuerpo = `
+            <div class="cuadro"><h4>Diagrama · ${API.esc(item.tipo || '')}</h4>
+              <p>${API.esc(item.descripcion || '')}</p>
+              <div id="dg-view" style="height:480px;min-height:400px"></div>
+              <button class="sutil" id="btn-nodos">Ver nodos (JSON)</button>
+              <pre id="ver-nodos" style="display:none; white-space:pre-wrap">${API.esc(JSON.stringify(grafoDiag, null, 2))}</pre></div>`;
+        } else {
+          cuerpo = muroPago(item);
+        }
+      } else if (kind === 'imagen') {
+        cuerpo = item.descripcion ? `<p>${API.esc(item.descripcion)}</p>` : '';
+      }
+
+      const tags = (item.hashtags || []).map(t => `<span class="chip">#${API.esc(t)}</span>`).join('');
+
+      document.querySelector('.hueco')?.remove();
+      document.title = `${item.titulo} — Luta e Dança`;
+      pagina.innerHTML = `
+        ${media}
+        <h1 class="detalle-titulo">${API.esc(item.titulo)}</h1>
+        <div class="detalle-meta">
+          <span class="autor-linea">✚ ${API.esc(item.autor_nombre)}</span>
+          <span>${API.numero(item.vistas)} vistas</span>
+          <span>${API.fecha(item.creado_en)}</span>
+          ${item.categoria ? `<span>${API.esc(item.categoria)}</span>` : ''}
+        </div>
+        ${tags ? `<div class="tags">${tags}</div>` : ''}
+        <div class="botonera" id="acciones"></div>
+        ${cuerpo}
+
+        <div id="relacionados" style="margin-top:28px"></div>
+        <section id="comentarios-wrap" style="margin-top:28px"></section>`;
+
+      pagina.querySelectorAll('video').forEach(vid => {
+        vid.addEventListener('error', () => {
+          const code = vid.error ? vid.error.code : '?';
+          console.error(`[video] error al reproducir code=${code} src=${vid.currentSrc || vid.src}`);
+          const aviso = document.createElement('p');
+          aviso.style.cssText = 'background:rgba(230,57,70,.12);color:#e63946;padding:8px 12px;border-radius:8px;margin:10px 0';
+          aviso.textContent = `No se pudo reproducir el video (código ${code}). Revisa la consola y el log [media] del servidor.`;
+          vid.after(aviso);
+        });
+      });
+
+      if (kind === 'diagrama' && grafoDiag) {
+        const host = document.getElementById('dg-view');
+        if (host && typeof DiagramCanvas !== 'undefined') {
+          if (grafoDiag.legacy_text && !grafoDiag.nodes.length) {
+            host.innerHTML = `<div class="hueco">Este diagrama no tiene nodos representables: ${API.esc(String(grafoDiag.legacy_text).slice(0, 120))}</div>`;
+          } else {
+            const v = new DiagramCanvas(host, { mode: 'view' });
+            v.loadData(grafoDiag);
+            requestAnimationFrame(() => v.init());
+            dgViewers.push(v);
+          }
+        }
+      }
+
+      if (typeof DiagramCanvas !== 'undefined') {
+        instPendientes.forEach((nodos, i) => {
+          const host = pagina.querySelector(`.dg-embed[data-dg="${i}"]`);
+          if (!host) return;
+          let grafo;
+          try { grafo = grafoNormalizado(nodos); } catch (_e) { grafo = { nodes: [], edges: [], legacy_text: String(nodos || '') }; }
+          if (grafo.legacy_text && !grafo.nodes.length) {
+            host.innerHTML = `<div class="hueco">Este diagrama no tiene nodos representables.</div>`;
+          } else {
+            const v = new DiagramCanvas(host, { mode: 'view' });
+            v.loadData(grafo);
+            requestAnimationFrame(() => v.init());
+            dgViewers.push(v);
+          }
+        });
+      }
+
+      const btnNodos = document.getElementById('btn-nodos');
+      if (btnNodos) btnNodos.addEventListener('click', () => {
+        const pre = document.getElementById('ver-nodos');
+        pre.style.display = pre.style.display === 'none' ? 'block' : 'none';
+      });
+
+      const btnComprar = document.getElementById('btn-comprar');
+      if (btnComprar) {
+        btnComprar.addEventListener('click', async () => {
+          try {
+            const r = await API.post('/api/monetizacion/compras', { contenido_tipo: TIPO, contenido_id: Number(ID) });
+            API.toast(`Compra completada (${r.item.referencia}). ¡Disfrútalo!`, 'ok');
+            location.reload();
+          } catch (e) { API.toast(e.message, 'err'); }
+        });
+      }
+
+      if (item.tipo_venta === 'suscripcion' && !item.tiene_acceso && item.monetizado) {
+        const cont = document.getElementById('lista-planes');
+        if (cont) {
+          cajaSuscripcion(item.autor_id);
+          document.getElementById('acciones').style.display = 'none';
+        }
+      }
+
+      AUTOR_ID = item.autor_id;
+      accionesComunidad(item);
+      cargarRelacionados(item);
+      cargarComentarios(TIPO, ID);
+    }
+
+    function renderPasos(pasos, item) {
+      return pasos.map((paso, i) => `
+        <div style="margin-bottom:10px" data-paso="${i}">
+          <strong>${i + 1}. ${API.esc(paso.titulo || '')}</strong>
+          ${paso.descripcion ? `<p class="span-mut">${API.esc(paso.descripcion)}</p>` : ''}
+          ${paso.archivo ? (paso.tipo_media === 'video'
+            ? `<video controls src="${API.esc(API.media(paso.archivo))}"></video>`
+            : `<img src="${API.esc(API.media(paso.archivo))}" alt="" onerror="this.onerror=null;this.src=API.PH">`) : ''}
+        </div>`).join('');
+    }
+
+    function accionesComunidad(item) {
+      const user = API.usuario();
+      const cont = document.getElementById('acciones');
+      if (!cont) return;
+      if (!user) {
+        cont.innerHTML = `<a class="btn primario" href="login.html">Iniciar sesión para participar</a>`;
+        return;
+      }
+      if (Number(user.id) === Number(item.autor_id)) {
+        cont.innerHTML = `<a class="btn" href="dashboard.html#mio">Editar desde mi perfil</a>`;
+        return;
+      }
+      cont.innerHTML = `
+        <button class="btn" id="btn-like">${item.liked ? '❤ Activo' : '♡ Me gusta'} <span id="num-likes">${API.numero(item.likes_count || 0)}</span></button>
+        <button class="btn sutil" id="btn-seguir">Seguir</button>
+        <button class="btn sutil" id="btn-reportar">Reportar</button>`;
+
+      document.getElementById('btn-like').addEventListener('click', async () => {
+        try {
+          const r = await API.post(`/api/contenido/${TIPO}/${ID}/like`);
+          const b = document.getElementById('btn-like');
+          b.innerHTML = `${r.liked ? '❤ Activo' : '♡ Me gusta'} <span id="num-likes">${API.numero(r.likes_count)}</span>`;
+        } catch (e) { API.toast(e.message, 'err'); }
+      });
+
+      document.getElementById('btn-seguir').addEventListener('click', async () => {
+        try {
+          const r = await API.post(`/api/social/seguir/${item.autor_id}`);
+          API.toast(r.following ? 'Siguiendo al creador' : 'Dejaste de seguir', r.following ? 'ok' : '');
+          document.getElementById('btn-seguir').textContent = r.following ? 'Siguiendo ✓' : 'Seguir';
+        } catch (e) { API.toast(e.message, 'err'); }
+      });
+
+      document.getElementById('btn-reportar').addEventListener('click', async () => {
+        const motivo = prompt('¿Por qué reportas este contenido?');
+        if (!motivo) return;
+        try {
+          const r = await API.post(`/api/contenido/${TIPO}/${ID}/reportar`, { motivo });
+          API.toast(r.message, 'ok');
+        } catch (e) { API.toast(e.message, 'err'); }
+      });
+
+      API.get(`/api/social/estado/${item.autor_id}`).then(d => {
+        const b = document.getElementById('btn-seguir');
+        if (b) b.textContent = d.is_following ? 'Siguiendo ✓' : 'Seguir';
+      }).catch(() => {});
+    }
+
+    function cargarRelacionados(item) {
+      const cont = document.getElementById('relacionados');
+      const params = new URLSearchParams({ limit: 8 });
+      if (item.categoria) params.set('cat', item.categoria);
+      if (ID) params.set('id', ID);
+      API.get(`/api/feed/relacionados?${params}`).then(data => {
+        if (!data.items.length) { cont.remove(); return; }
+        const mtmp = (r) => {
+          const src = r.thumbPath || API.thumb(r.filepath);
+          if (src) return `<img src="${src}" alt="" loading="lazy" onerror="this.onerror=null;this.src=API.PH">`;
+          return `<div class="placeholder">VIDEO</div>`;
+        };
+        cont.innerHTML = `<h3>Relacionados</h3><div class="grilla">` + data.items.map(v => `
+          <article class="tarjeta" data-id="${v.id}" style="cursor:pointer">
+            <div class="mini">${mtmp(v)}<span class="etiqueta">${v.monetizado && v.tipo_venta !== 'gratis' ? (v.tipo_venta === 'suscripcion' ? 'Suscripción' : API.precio(v.precio)) : 'Gratis'}</span></div>
+            <div class="cuerpo"><h3>${API.esc(v.titulo)}</h3>
+              <div class="meta"><span>${API.esc(v.autor_nombre || 'Autor')}</span> · <span>${API.numero(v.vistas)} vistas</span></div>
+            </div>
+          </article>`).join('') + `</div>`;
+        cont.querySelectorAll('.tarjeta').forEach(card => card.addEventListener('click', () => {
+          location.href = `detalle.html?tipo=video&id=${card.dataset.id}`;
+        }));
+      }).catch(() => { cont.remove(); });
+    }
+
+    function plantaComentario(c, nivel = 0) {
+      const user = API.usuario();
+      const puedeBorrar = user && (Number(user.id) === Number(c.usuario_id) || Number(user.id) === Number(AUTOR_ID) || ['moderador', 'admin'].includes(user.rol));
+      return `
+        <div class="com" style="margin-left:${nivel ? 24 : 0}px; margin-bottom:14px">
+          <p><strong>${API.esc(c.autor_nombre)}</strong> <span class="span-mut">· ${API.fecha(c.creado_en)}</span></p>
+          <p>${API.esc(c.mensaje)}</p>
+          <div class="fila" style="align-items:center; gap:8px">
+            ${user ? `<button class="btn-mini" data-resp="${c.id}">Responder</button>` : ''}
+            ${puedeBorrar ? `<button class="btn-mini peligro" data-del="${c.id}">Eliminar</button>` : ''}
+          </div>
+          ${c.respuestas && c.respuestas.length ? c.respuestas.map(r => plantaComentario(r, 1)).join('') : ''}
+          <div class="resp-box" id="resp-${c.id}" style="display:none">
+            <input type="text" class="campo" placeholder="Escribe una respuesta…">
+            <button class="primario btn-mini">Enviar</button>
+          </div>
+        </div>`;
+    }
+
+    function cargarComentarios(tipo, id) {
+      const sec = document.getElementById('comentarios-wrap');
+      sec.innerHTML = `<h3>Comentarios</h3><div id="lista-comentarios"><p class="span-mut">Cargando…</p></div>`;
+      API.get(`/api/contenido/${tipo}/${id}/comentarios`).then(data => {
+        const cont = document.getElementById('lista-comentarios');
+        const user = API.usuario();
+        if (!data.comentarios.length) cont.innerHTML = `<p class="span-mut">No hay comentarios todavía.</p>`;
+        else cont.innerHTML = data.comentarios.map(c => plantaComentario(c)).join('');
+        if (user) {
+          sec.insertAdjacentHTML('beforeend', `
+            <form id="form-comentario" class="form-grid">
+              <textarea class="campo" id="com-mensaje" rows="2" placeholder="Escribe un comentario…" required></textarea>
+              <button class="primario" type="submit">Comentar</button>
+            </form>`);
+          document.getElementById('form-comentario').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const mensaje = document.getElementById('com-mensaje').value.trim();
+            if (!mensaje) return;
+            try {
+              await API.post(`/api/contenido/${tipo}/${id}/comentarios`, { mensaje });
+              API.toast('Comentario publicado', 'ok');
+              cargarComentarios(tipo, id);
+            } catch (err) { API.toast(err.message, 'err'); }
+          });
+        }
+        cont.querySelectorAll('button[data-resp]').forEach(b => b.addEventListener('click', () => {
+          const box = document.getElementById('resp-' + b.dataset.resp);
+          if (box) box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+        }));
+        cont.querySelectorAll('.resp-box').forEach(box => {
+          const btn = box.querySelector('button');
+          btn.addEventListener('click', async () => {
+            const inp = box.querySelector('input');
+            const mensaje = inp.value.trim();
+            const parent = Number(box.id.split('-')[1]);
+            if (!mensaje) return;
+            try {
+              await API.post(`/api/contenido/${tipo}/${id}/comentarios`, { mensaje, parent_id: parent });
+              API.toast('Respuesta publicada', 'ok');
+              cargarComentarios(tipo, id);
+            } catch (err) { API.toast(err.message, 'err'); }
+          });
+        });
+        cont.querySelectorAll('button[data-del]').forEach(b => b.addEventListener('click', async () => {
+          if (!confirm('¿Eliminar este comentario?')) return;
+          try {
+            await API.del(`/api/contenido/comentarios/${b.dataset.del}`);
+            API.toast('Comentario eliminado', 'ok');
+            cargarComentarios(tipo, id);
+          } catch (err) { API.toast(err.message, 'err'); }
+        }));
+      }).catch(e => { sec.innerHTML = `<h3>Comentarios</h3><p class="span-mut">${API.esc(e.message)}</p>`; });
+    }
+
+    navIdentidad();
+    if (!TIPO || !ID) { pagina.innerHTML = '<div class="hueco">Parámetros inválidos</div>'; }
+    else {
+      API.get(`/api/contenido/${TIPO}/${ID}`)
+        .then(d => render(d.item))
+        .catch(e => { pagina.innerHTML = `<div class="hueco">${API.esc(e.message)}</div>`; });
+    }
+  </script>
+</body>
+</html>

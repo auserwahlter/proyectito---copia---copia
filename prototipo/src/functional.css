@@ -1,0 +1,99 @@
+.topbar { position: relative; }
+.notice-popover { position: absolute; z-index: 25; top: 52px; right: 100px; width: 230px; display: grid; gap: 12px; padding: 14px; border: 1px solid var(--line); border-radius: 6px; background: #fff; box-shadow: 0 12px 30px #17231f20; }
+.notice-popover strong { color: var(--ink); font-size: 11px; }
+.notice-popover span { display: flex; align-items: center; gap: 7px; color: #66726a; font-size: 9px; }
+.notice-popover span i, .viewer-count > span { width: 7px; height: 7px; border-radius: 50%; background: #66a476; }
+.notice-popover button { justify-self: end; padding: 5px 8px; border: 1px solid var(--line); border-radius: 4px; background: #fff; color: #59655e; font-size: 9px; cursor: pointer; }
+.roster-toolbar label { display: inline-flex; align-items: center; gap: 7px; color: #657168; font-size: 9px; }
+.roster-toolbar select { min-height: 29px; padding: 0 8px; border: 1px solid #e2e7e3; border-radius: 4px; background: #fff; color: #536059; font-size: 9px; }
+.row-actions { display: flex; gap: 4px; }
+.row-actions button { width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid transparent; border-radius: 4px; background: transparent; color: #738078; cursor: pointer; }
+.row-actions button:hover { border-color: #e2e7e3; background: #f6f8f6; color: #26372f; }
+.row-actions button:last-child:hover { color: #b95042; }
+.score-controls-head button:disabled { opacity: .35; cursor: not-allowed; }
+.mini-round > button > span { display: flex; justify-content: space-between; gap: 6px; }
+.mini-round > button > span b { color: #26372f; font-variant-numeric: tabular-nums; }
+.bracket-bout .fighter-row > b { min-width: 14px; text-align: right; font-variant-numeric: tabular-nums; }
+.help-content { display: grid; padding: 8px 21px 20px; }
+.help-content > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #edf0ed; color: #59665e; font-size: 10px; }
+.help-content > div:last-child { border: 0; }
+.help-content strong { color: #405247; font-size: 10px; }
+.live-studio { margin-bottom: 15px; padding: 17px; border: 1px solid var(--line); border-radius: 7px; background: white; }
+.live-studio-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+.live-studio-head h2 { margin: 5px 0 0; color: var(--ink); font: 600 21px/1 var(--display); }
+.live-studio-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(260px, .8fr); gap: 17px; }
+.publisher-preview { min-height: 220px; aspect-ratio: 16/9; position: relative; display: grid; place-items: center; overflow: hidden; border-radius: 5px; background: #17231f; }
+.publisher-preview video { display: none; width: 100%; height: 100%; object-fit: contain; }
+.publisher-preview.has-stream video { display: block; }
+.publisher-preview.has-stream .video-empty { display: none; }
+.publisher-preview .video-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; color: #a5b3aa; text-align: center; }
+.publisher-preview .video-empty strong { color: #f0f4f1; font: 500 20px/1 var(--display); }
+.publisher-preview .video-empty span { max-width: 260px; color: #a1aea5; font-size: 9px; line-height: 1.5; }
+.publisher-preview > video { position: absolute; inset: 0; }
+.live-preview-badge { position: absolute; top: 10px; left: 10px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 3px; background: #bd453de8; color: white; font-size: 8px; font-weight: 700; letter-spacing: .55px; }
+.live-preview-badge i { width: 6px; height: 6px; border-radius: 50%; background: white; }
+.live-studio-controls { display: flex; flex-direction: column; align-items: stretch; }
+.live-studio-controls > p { margin: 0 0 15px; color: #758078; font-size: 10px; line-height: 1.6; }
+.studio-actions { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.viewer-count { display: inline-flex; align-items: center; gap: 6px; color: #66736a; font-size: 9px; white-space: nowrap; }
+.share-label { margin-bottom: 6px; color: #66736a; font-size: 9px; font-weight: 600; }
+.share-row { display: flex; gap: 5px; }
+.share-row input { min-width: 0; height: 34px; flex: 1; padding: 0 8px; border: 1px solid #e0e6e1; border-radius: 4px; background: #f9faf9; color: #56635a; font: 9px var(--body); }
+.share-row button { width: 34px; display: grid; place-items: center; border: 1px solid #e0e6e1; border-radius: 4px; background: #fff; color: #56635a; cursor: pointer; }
+.share-row button:hover { background: #f4f7f3; }
+.share-hint { margin-top: 8px; color: #929b95; font-size: 8px; line-height: 1.5; }
+.studio-error { margin: 0 0 10px !important; color: #b0443c !important; }
+.hls-layout { margin-top: 16px; }
+.viewer-page { min-height: 100vh; background: #17231f; color: #eef3ef; }
+.viewer-header { height: 65px; display: flex; align-items: center; justify-content: space-between; padding: 0 max(22px, calc((100vw - 1120px) / 2)); border-bottom: 1px solid #35433d; }
+.viewer-header .brand { margin: 0; text-decoration: none; }
+.viewer-header .brand > span:last-child { color: #f8f9f7; }
+.viewer-content { width: min(100% - 32px, 1000px); margin: 50px auto; }
+.viewer-content .eyebrow { color: #9eaea4; }
+.viewer-content h1 { margin: 10px 0 20px; color: white; font: 600 39px/1 var(--display); }
+.viewer-screen { aspect-ratio: 16/9; display: grid; place-items: center; overflow: hidden; border: 1px solid #35443d; border-radius: 6px; background: #0d1511; }
+.viewer-screen video { width: 100%; height: 100%; object-fit: contain; }
+.viewer-controls { display: flex; gap: 8px; margin-top: 14px; }
+.viewer-caption { margin-top: 13px; color: #9eaaa2; font-size: 10px; }
+.viewer-page .connection { border-color: #48584e; background: #22312a; color: #b9c8bd; }
+.viewer-page .connection.connected { border-color: #426c4b; background: #1e3525; color: #b8e0bd; }
+.viewer-page .button.secondary { border-color: #536158; background: #293830; color: #e5ece6; }
+.api-status { display: inline-flex; align-items: center; gap: 6px; color: #557a55; font-size: 8px; }
+.api-status i { width: 6px; height: 6px; border-radius: 50%; background: #64a36e; }
+.camera-modal { width: min(100%, 410px); }
+.camera-modal-body { padding: 17px 21px 8px; }
+.camera-modal-body > label { display: block; margin-bottom: 7px; color: #56635b; font-size: 10px; font-weight: 600; }
+.camera-select-wrap { height: 42px; display: flex; align-items: center; gap: 9px; padding: 0 10px; border: 1px solid #dfe5e0; border-radius: 5px; background: #fff; color: #607065; }
+.camera-select-wrap select { min-width: 0; height: 100%; flex: 1; appearance: none; border: 0; outline: 0; background: transparent; color: #344139; font: 11px var(--body); }
+.camera-select-wrap select:disabled { color: #909a93; }
+.camera-permission-note { margin: 9px 0 0; color: #858f89; font-size: 9px; line-height: 1.55; }
+.camera-modal-actions { padding: 13px 21px 19px; }
+.camera-modal-actions .button { min-height: 38px; }
+.camera-modal-actions .button svg { flex: 0 0 auto; }
+.camera-modal-actions button:disabled { opacity: .55; cursor: progress; }
+.camera-error { margin: 10px 0 0 !important; font-size: 9px !important; }
+.live-broadcast-page[hidden] { display: none; }
+.live-broadcast-page:not([hidden]) { min-height: 0; }
+.clock-play[aria-label="Iniciar combate y retransmitir"] { position: relative; }
+.match-header .live-pill { color: #a74636; }
+@media (max-width: 620px) {
+  .camera-modal-body { padding-right: 16px; padding-left: 16px; }
+  .camera-modal-actions { padding-right: 16px; padding-left: 16px; }
+}
+
+@media (max-width: 850px) {
+  .live-studio-grid { grid-template-columns: minmax(0, 1fr); }
+  .live-studio-controls > p { margin-bottom: 10px; }
+  .share-hint { max-width: 500px; }
+}
+@media (max-width: 620px) {
+  .live-studio { padding: 12px; }
+  .live-studio-head h2 { font-size: 19px; }
+  .live-studio-head .connection { max-width: 110px; font-size: 8px; }
+  .publisher-preview { min-height: 180px; }
+  .viewer-header { height: 58px; padding: 0 14px; }
+  .viewer-header .brand { font-size: 16px; }
+  .viewer-content { margin: 30px auto; }
+  .viewer-content h1 { font-size: 31px; }
+  .notice-popover { right: 10px; }
+}

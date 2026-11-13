@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel del Estudiante — Luta e Dança</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/x-icon" />
+    <link rel="stylesheet" href="profesor-dashboard.css"/>
+  <link rel="stylesheet" href="student-dashboard.css" />
+  <link rel="stylesheet" href="encyclopedia.css" />
+
+  <link rel="stylesheet" href="puzzle.css" />
+  <link rel="stylesheet" href="diagramas-interactivos.css" />
+</head>
+<body>
+  <div class="dashboard-shell">
+    <aside class="sidebar-card">
+      <div class="brand-block">
+        <img src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA" style="height:40px;width:auto;border-radius:8px;margin-bottom:6px">
+        <p class="eyebrow">LUTA E DANÇA</p>
+        <h1>Panel del estudiante</h1>
+        <p class="brand-copy">Entrenamiento, progreso y planificación de tu camino en grappling.</p>
+      </div>
+
+      <div class="profile-card">
+        <div class="avatar-ring">👤</div>
+        <div>
+          <p class="profile-label">Alumno</p>
+          <h2 id="student-name">Nombre</h2>
+          <p class="profile-meta" id="student-meta">Rango</p>
+        </div>
+      </div>
+      <nav class="sidebar-nav" aria-label="Navegación del dashboard">
+        <a class="nav-item active" href="#" data-section="inicio"> Inicio</a>
+        <a class="nav-item" href="#" data-section="instruccionales"> Instruccionales</a>
+        <a class="nav-item" href="#" data-section="diagramas-interactivos"> Diagramas</a>
+        <a class="nav-item" href="#" data-section="encyclopedia"> Enciclopedia</a>
+        <a class="nav-item" href="#" data-section="puzzles"> Puzzles</a>
+        <a class="nav-item" href="#" data-section="novedades"> Novedades</a>
+        <a class="nav-item" id="matctrl-entry" href="#" target="_blank" rel="noopener noreferrer"> Torneos y directos</a>
+        <a class="nav-item" href="#" data-section="editar-perfil"> Editar Perfil</a>
+      </nav>
+    </aside>
+<!-- ── MAIN ───────────────────────────────────────────── -->
+    <main class="main-panel">
+      <section class="dashboard-topbar">
+        <div class="dashboard-topbar-copy">
+          <p class="eyebrow">Centro de actividad</p>
+          <h2>Tablero comunitario</h2>
+        </div>
+<button id="logout-btn" class="ghost-btn">Cerrar sesión</button>
+
+        <div class="notification-widget">
+          <button id="notification-toggle" class="notification-toggle" type="button" aria-expanded="false" aria-controls="notification-panel">
+            <span class="notification-icon">🔔</span>
+            <span id="notification-badge" class="notification-badge">0</span>
+          </button>
+          <div id="notification-panel" class="notification-panel hidden" role="dialog" aria-label="Notificaciones">
+            <div class="notification-panel-header">
+              <div>
+                <p class="eyebrow">Avisos</p>
+                <h3>Notificaciones</h3>
+              </div>
+              <button id="mark-all-read-btn" class="ghost-btn small-btn" type="button">Marcar todas</button>
+            </div>
+            <div id="notification-list" class="notification-list"></div>
+          </div>
+        </div>
+      </section>
+          <!-- ═══════════════════ SECCIÓN: INICIO ═══════════════════ -->
+   <div id="section-inicio" class="student-section">
+      <section class="hero-card">
+        <div class="hero-copy">
+          <p class="eyebrow">Bienvenido de vuelta</p>
+          <h2 id="dashboard-title">Hola, atleta</h2>
+          <p class="hero-text">Tu entrenamiento está listo para avanzar. Revisa la planificación, tu progreso y la próxima clase guiada.</p>
+          <div class="hero-badges">
+            <span class="hero-badge">🔥 En racha</span>
+            <span class="hero-badge" id="hero-rank-badge">faixa</span>
+            <span class="hero-badge">⚡ Plan activo</span>
+          </div>
+        </div>
+
+            <article class="panel-card profile-panel">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Cuenta</p>
+                  <h3>Mi perfil</h3>
+                </div>
+              </div>
+
+              <div class="profile-stats">
+                <div class="mini-stat">
+                  <span class="mini-label">Pago</span>
+                  <strong id="payment-method">Tarjeta</strong>
+                </div>
+                <div class="mini-stat">
+                  <span class="mini-label">Estado</span>
+                  <strong id="account-status">Activo</strong>
+                </div>
+                <div class="mini-stat">
+                  <span class="mini-label">Última sesión</span>
+                  <strong id="last-session">Hoy</strong>
+                </div>
+              </div>
+            </article>
+          </section>
+                <!-- ── Contenido reciente de profesores (nuevo) ── -->
+        <section class="recientes-section" style="grid-column:1/-1;margin-top:0">
+          <div class="panel-card" style="padding:0">
+            <div class="panel-header" style="padding:16px 20px 12px">
+              <div>
+                <p class="eyebrow">De tus profesores</p>
+                <h3>Contenido reciente</h3>
+              </div>
+              <span class="panel-pill" id="recientes-count">cargando…</span>
+            </div>
+            <div id="recientes-grid" class="recientes-grid">
+              <p class="empty-state-msg" style="padding:16px">Cargando contenido…</p>
+            </div>
+          </div>
+        </section>
+
+            <article class="panel-card upload-card">
+              <div class="panel-header">
+                <div>
+                  <p class="eyebrow">Mi espacio</p>
+                  <h3>Subir video de entrenamiento</h3>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="student-video-title">Título</label>
+                  <input id="student-video-title" class="form-input" type="text" placeholder="Ej. Guardia de lazo contra pass" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="student-video-description">Descripción</label>
+                  <textarea id="student-video-description" class="form-input" rows="3" placeholder="Describe tu entrenamiento o pregunta"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="student-video-hashtags">Hashtags</label>
+                  <input id="student-video-hashtags" class="form-input" type="text" placeholder="#guardia #takedown" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="student-video-file">Archivo de video</label>
+                  <input id="student-video-file" type="file" accept="video/mp4,video/webm,video/quicktime" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button id="student-video-upload-btn" class="primary-btn" type="button">Subir video</button>
+              </div>
+              <div id="student-video-upload-feedback" class="feedback-msg hidden"></div>
+              <div id="student-video-list" class="student-video-list" style="margin-top:16px"></div>
+            </article>
+
+            <div class="forum-prompt-box">
+              <p class="forum-prompt-title">Comparte tu duda con la comunidad</p>
+              <p class="forum-prompt-copy">Preguntas técnicas, rutinas, consejos de movilidad y estrategias de combate.</p>
+              <label class="sr-only" for="forum-message">Escribe tu pregunta del foro</label>
+              <textarea id="forum-message" class="forum-textarea" rows="4" placeholder="Escribe una pregunta..."></textarea>
+              <label class="file-input-label" for="forum-image-input">Adjuntar imagen</label>
+              <input id="forum-image-input" class="forum-image-input" type="file" accept="image/*">
+              <div id="forum-image-preview-wrap" class="forum-image-preview-wrap hidden">
+                <img id="forum-image-preview" alt="Previsualización de imagen" />
+                <button id="forum-image-remove-btn" class="icon-btn secondary">Eliminar</button>
+              </div>
+              <div class="forum-prompt-actions">
+                <span class="forum-hint">Usa hashtags como #guardia #movilidad</span>
+                <button id="publish-forum-btn" class="ghost-btn small-btn" type="button">Publicar</button>
+              </div>
+            </div>
+
+            <div id="forum-filter-chips" class="forum-filter-chips" aria-label="Filtros de hashtags"></div>
+ 
+            <div id="forum-post-list" class="forum-post-list" aria-live="polite"></div>
+          </div>
+
+      <aside class="forum-rail" aria-label="Foro de estudiantes">
+        <article class="panel-card forum-panel">
+          <div class="forum-header">
+            <div>
+              <p class="eyebrow">Comunidad</p>
+              <h3>Foro de estudiantes</h3>
+            </div>
+            <span class="forum-live-pill">● En vivo</span>
+          </div>
+        </article>
+      </aside>
+
+    <!-- ═══════════════════ SECCIÓN: INSTRUCCIONALES ═══════════════════ -->
+     <div id="section-instruccionales" class="student-section hidden">
+        <div class="section-header">
+          <p class="eyebrow">Técnicas y drills</p>
+          <h2>Instruccionales</h2>
+        </div>
+
+        <!-- Barra de filtros -->
+        <div class="inst-toolbar" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px">
+          <select id="inst-filtro-nivel" class="form-input" style="width:auto;min-width:140px;padding:7px 12px;font-size:13px">
+            <option value="">Todos los niveles</option>
+            <option value="principiante">Principiante</option>
+            <option value="intermedio">Intermedio</option>
+            <option value="avanzado">Avanzado</option>
+          </select>
+          <select id="inst-filtro-categoria" class="form-input" style="width:auto;min-width:160px;padding:7px 12px;font-size:13px">
+            <option value="">Todas las categorías</option>
+            <option value="guardia_cerrada">Guardia cerrada</option>
+            <option value="guardia_abierta">Guardia abierta</option>
+            <option value="media_guardia">Media guardia</option>
+            <option value="montada">Montada</option>
+            <option value="espalda">Control de espalda</option>
+            <option value="de_pie">Trabajo de pie</option>
+            <option value="otro">Otro</option>
+          </select>
+          <span class="panel-pill" id="inst-count" style="margin-left:auto">—</span>
+        </div>
+
+        <div id="instruccionales-grid" class="instruccionales-grid"></div>
+     </div>
+
+    <!-- ═══════════════════ SECCIÓN: DIAGRAMAS INTERACTIVOS ═══════════════════ -->
+    <div id="section-diagramas-interactivos" class="student-section hidden">
+      <div class="section-header">
+        <p class="eyebrow">Mapas de conocimiento</p>
+        <h2>Diagramas interactivos</h2>
+        <p class="hero-text" style="margin-top:8px;color:#888;font-size:14px">
+          Explora técnicas, posiciones y transiciones publicadas por los profesores.
+        </p>
+      </div>
+      <div class="inst-toolbar" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px">
+        <select id="di-filtro-tipo" class="form-input" style="width:auto;min-width:180px;padding:7px 12px;font-size:13px">
+          <option value="">Todos los tipos</option>
+          <option value="arbol_decision">Árbol de decisión</option>
+          <option value="flujo_posiciones">Flujo de posiciones</option>
+          <option value="sistema_juego">Sistema de juego</option>
+          <option value="cadena_sumision">Cadena de sumisiones</option>
+        </select>
+        <span class="panel-pill" id="di-count" style="margin-left:auto">—</span>
+      </div>
+      <div id="diagramas-grid" class="diagramas-grid">
+        <p class="empty-state-msg">Cargando diagramas…</p>
+      </div>
+    </div>
+
+    <!-- Viewer modal -->
+    <div id="di-viewer-overlay" class="di-viewer-overlay hidden" role="dialog" aria-modal="true">
+      <div class="di-viewer-shell">
+        <div class="di-viewer-header">
+          <h2 id="di-viewer-title">Diagrama</h2>
+          <span class="panel-pill" id="di-viewer-meta"></span>
+          <button type="button" class="ghost-btn" id="di-viewer-close">✕ Cerrar</button>
+        </div>
+        <div class="di-viewer-main" id="di-viewer-canvas-host" style="flex:1;min-height:400px"></div>
+        <div class="di-social-bar">
+          <button type="button" class="ghost-btn di-like-btn" id="di-like-btn">❤️ <span id="di-like-count">0</span></button>
+          <span style="color:#888;font-size:13px">👁 <span id="di-view-count">0</span> vistas</span>
+          <span style="flex:1"></span>
+          <button type="button" class="ghost-btn" id="di-report-btn">⚠️ Reportar</button>
+        </div>
+        <div class="di-comments-section">
+          <p class="eyebrow" style="margin:0 0 8px">Comentarios</p>
+          <div id="di-comments-list"></div>
+          <div class="di-comment-form">
+            <input type="text" id="di-comment-input" placeholder="Escribe un comentario…" maxlength="500" />
+            <button type="button" class="primary-btn" id="di-comment-submit">Enviar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════ SECCIÓN: ENCYCLOPEDIA ═══════════════════  -->
+ <div id="section-encyclopedia" class="prof-section hidden">
+
+      <!--
+        #enc-app-host: contenedor que le da altura al grafo.
+        Al estar dentro del main-panel (que ya tiene scroll propio),
+        usamos una altura fija generosa. El canvas se adapta a ella
+        via flex:1 definido en encyclopedia.css sobre #canvas-wrap.
+      -->
+      <div id="enc-app-host" style="
+        width: 100%;
+        height: calc(100vh - 120px);
+        min-height: 540px;
+        border-radius: 12px;
+        overflow: hidden;
+      ">
+
+        <div id="app">
+
+          <!-- TOOLBAR -->
+          <div id="toolbar">
+            <input id="search" type="text" placeholder="Search technique…"
+                   oninput="handleSearch(this.value)">
+            <div style="width:1px;height:20px;background:#222"></div>
+            <button class="filter-btn f-guard active"      data-cat="guard"
+                    onclick="toggleFilter('guard',this)">Guard</button>
+            <button class="filter-btn f-pass active"       data-cat="pass"
+                    onclick="toggleFilter('pass',this)">Pass</button>
+            <button class="filter-btn f-sweep active"      data-cat="sweep"
+                    onclick="toggleFilter('sweep',this)">Sweep</button>
+            <button class="filter-btn f-submission active" data-cat="submission"
+                    onclick="toggleFilter('submission',this)">Submission</button>
+            <button class="filter-btn f-escape active"     data-cat="escape"
+                    onclick="toggleFilter('escape',this)">Escape</button>
+            <button class="filter-btn f-takedown active"   data-cat="takedown"
+                    onclick="toggleFilter('takedown',this)">Takedown</button>
+            <div id="legend">
+              <span class="leg"><span class="leg-dot" style="background:#4a9eff"></span>Guard</span>
+              <span class="leg"><span class="leg-dot" style="background:#ff7a45"></span>Pass</span>
+              <span class="leg"><span class="leg-dot" style="background:#a8e063"></span>Sweep</span>
+              <span class="leg"><span class="leg-dot" style="background:#d97aff"></span>Sub</span>
+              <span class="leg"><span class="leg-dot" style="background:#ffca45"></span>Escape</span>
+              <span class="leg"><span class="leg-dot" style="background:#45e8c8"></span>TD</span>
+            </div>
+          </div>
+
+          <!-- CANVAS -->
+          <div id="canvas-wrap">
+            <canvas id="c"></canvas>
+            <div id="tooltip"></div>
+            <div id="no-results">No techniques found</div>
+            <div id="minimap"><canvas id="mc"></canvas></div>
+            <div id="zoom-ctrls">
+              <button class="zbtn" onclick="zoom(1.2)">+</button>
+              <button class="zbtn" onclick="zoom(0.8)">−</button>
+              <button class="zbtn" title="Reset" onclick="resetView()">⌂</button>
+            </div>
+          </div>
+
+        </div><!-- /#app -->
+
+      </div><!-- /#enc-app-host -->
+
+    </div><!-- /section-encyclopedia -->
+
+    <!-- FLASHCARD (position:fixed, fuera del flujo del dashboard) -->
+    <div id="flashcard" onclick="if(event.target===this)closeFC()">
+      <div id="fc-inner">
+        <div id="fc-header">
+          <div id="fc-tag"></div>
+          <div id="fc-title"></div>
+          <div id="fc-subtitle"></div>
+        </div>
+        <div id="fc-body">
+          <nav id="fc-toc"></nav>
+          <div id="fc-content"></div>
+        </div>
+        <button id="fc-close" onclick="closeFC()">✕</button>
+      </div>
+    </div>
+               
+    <!-- ═══════════════════ SECCIÓN: PUZZLES ═══════════════════ -->
+      <div id="section-puzzles" class="student-section hidden">
+        <div class="section-header">
+          <p class="eyebrow">Desafíos técnicos</p>
+          <h2>Puzzles de grappling</h2>
+        </div>
+  <div id="wrapper">
+
+      <div class="col">
+
+         <div id="position_wrapper">
+            <h2>Current Position: <span id="current_position">Blank</span></h2>
+            <p>Opponent's Current Position: <span id="current_position_opp">Blank</span></p>
+            <p>Position Modifiers: <span id="current_mods">None</span></p>
+         </div>
+
+
+         <div id="offense">
+              <h2>Possible Moves:</h2>
+              <div id="moves_list"></div>
+
+              <h2>Possible Position Modifiers:</h2>
+              <div id="mod_list"></div>
+
+              <input id="submit" type="button" value="Do It!"/>
+          </div>
+
+          <div id="defense">
+               <h2>Your opponent is attempting a move!</h2>
+               <h3>Opponent's Move: <span id="attempted_move_opp">Blank</span></h3>
+
+              <h3>Possible Defenses:</h3>
+              <div id="defense_list"></div>
+
+              <h3>Possible Actions:</h3>
+              <input id="submit_defend_yes" type="button" value="Defend"/>
+              <input id="submit_defend_no" type="button" value="Don't Defend"/>
+              <input id="submit_defend_random" type="button" value="Random"/>
+
+          </div>
+
+     </div>
+
+      <div class="col">
+         <div id="notes">
+             <h3>NOTES</h3>
+             <p class="note"><b>Position:</b> <span id="positionNote">none</span></p>
+             <p class="note"><b>Move:</b> <span id="moveNote">none</span></p>
+
+             <div style="display: flex; align-items: center;">
+                 <p class="note"><b>Videos:</b></p>
+                 <div id="video_toggle" title="Change size of videos"></div>
+             </div>
+
+             <div id="videoNote"></div>
+
+             <div id="linkNote">
+                 <p><b>Links:</b></p>
+             </div>
+
+             <p class="note"><b>Defenses:</b> <span id="defenseNote">none</span></p>
+         </div>
+      </div>
+
+ </div>
+
+ <div id="history"><b>History:</b> </div>
+
+ <div id="bottom_nav">
+    <div>
+        <p id="startFromSeated" class="restart button">Start new match<br> on the ground</p>
+        <p id="startFromRandom" class="restart button">Start somewhere<br> random</p>
+    </div>
+    <div id="posDropdown">
+        <select id="posList" onmousedown="this.value='';" onchange="reset(this.value);">
+            <option selected disabled>Pick a position to start from</option>
+        </select>
+    </div>
+
+    <div>
+
+       <div class="ai_wrapper">
+           <input type="checkbox" id="AIoffense" checked onclick="updateSettings(this)" />Enable AI Offense |
+           <div class="slidecontainer">
+              0<input type="range" min="0" max="100" value="50" class="slider" id="offRange">100
+            </div>
+       </div>
+       <div class="ai_wrapper">
+           <input type="checkbox" id="AIdefense" checked onclick="updateSettings(this)"/>Enable AI Defense
+           <div class="slidecontainer">
+              0<input type="range" min="0" max="100" value="50" class="slider" id="defRange">100
+            </div>
+       </div>
+
+    </div>
+
+    <!--<div>
+        <p id="forceAImove" class="button">Force AI move</p>
+    </div>-->
+
+    <div id="forceAImoveDropdown">
+        <select id="forceAImove" onmousedown="this.value='';" onchange="opponentAttemptMove(this.value);">
+            <option selected disabled>Force opponent move</option>
+        </select>
+    </div>
+
+
+</div>
+
+<div id="popup_small" class="cover">
+    <div class="inner">
+        <h3 class="title">Title</h3>
+        <p class="text">Text</p>
+        <button>OK</button>
+    </div>
+</div>
+<div id="popup_offense" class="cover">
+    <div class="inner">
+        <h3 class="title">Title</h3>
+        <p class="text">Text</p>
+        <button>OK</button>
+    </div>
+</div>
+<div id="notification">
+    <h3 class="title">Title</h3>
+    <p class="text">Text</p>
+</div>
+   <script src="puzzles/jquery-3.1.1.min.js"></script>
+   <script src="puzzles/TweenMax-2.0.0.min.js"></script>
+   <script src="puzzles/config.js"></script>
+   <script src="puzzles/positionList.js"></script>
+   <script src="puzzles/moves-submissions.js"></script>
+   <script src="puzzles/moves-positionChanges.js"></script>
+   <script src="puzzles/modifiers.js"></script>
+   <script src="puzzles/ai.js"></script>
+   <script src="puzzles/main.js"></script>
+      </div>
+    <!-- ═══════════════════ SECCIÓN: NOVEDADES ═══════════════════ -->
+      <div id="section-novedades" class="student-section hidden">
+        <div class="section-header">
+          <p class="eyebrow">Actualizaciones y noticias</p>
+          <h2>Novedades</h2>
+        </div>
+
+        <!-- Buscador y filtros por hashtag -->
+        <div class="novedades-toolbar" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px">
+          <div style="position:relative;flex:1;min-width:200px;max-width:320px">
+            <input id="novedades-search" type="text"
+                   placeholder="Buscar por hashtag o título…"
+                   class="form-input" style="padding:7px 12px 7px 32px;font-size:13px;width:100%"
+                   oninput="handleNovedadesSearch(this.value)" />
+            <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#666;pointer-events:none">🔍</span>
+          </div>
+          <div id="novedades-type-filters" style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="filter-chip active" data-type="">Todo</button>
+            <button class="filter-chip" data-type="Video">🎬 Videos</button>
+            <button class="filter-chip" data-type="Imagen">🖼️ Imágenes</button>
+            <button class="filter-chip" data-type="Instruccional">📚 Instruccionales</button>
+          </div>
+          <span class="panel-pill" id="novedades-count" style="margin-left:auto">—</span>
+        </div>
+
+        <!-- Chips de hashtags más usados -->
+        <div id="novedades-hashtag-chips" class="forum-filter-chips" style="margin-bottom:14px"></div>
+
+        <div id="novedades-list" class="novedades-list"></div>
+      </div>
+      <!-- ═══════════════════ SECCIÓN: EDITAR PERFIL ═══════════════════ -->
+         <div id="section-editar-perfil" class="prof-section hidden">
+      <section class="content-grid">
+
+        <!-- Editar datos personales -->
+        <article class="panel-card upload-card">
+          <div class="panel-header">
+            <div><p class="eyebrow">Mi cuenta</p><h3>Editar perfil</h3></div>
+          </div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label" for="perfil-nombre">Nombre completo</label>
+              <input class="form-input" type="text" id="perfil-nombre" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="perfil-email">Correo electrónico</label>
+              <input class="form-input" type="email" id="perfil-email" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="perfil-password-actual">Contraseña actual <span style="font-weight:400;text-transform:none">(requerida para guardar)</span></label>
+              <input class="form-input" type="password" id="perfil-password-actual" placeholder="Ingresa tu contraseña actual" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="perfil-password-nueva">Nueva contraseña <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+              <input class="form-input" type="password" id="perfil-password-nueva" placeholder="Dejar vacío para no cambiarla" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="perfil-metodo-pago">Método de pago para suscripción</label>
+              <select class="form-input" id="perfil-metodo-pago">
+                <option value="tarjeta">Tarjeta</option>
+                <option value="paypal">PayPal</option>
+                <option value="transferencia">Transferencia</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="perfil-codigo-moderador">Código para promover a moderador <span style="font-weight:400;text-transform:none">(opcional)</span></label>
+            <input class="form-input" type="password" id="perfil-codigo-moderador" placeholder="Ingresa el código secreto" />
+          </div>
+          <div class="form-actions" style="flex-wrap:wrap; gap:8px;">
+            <button class="primary-btn" type="button" id="perfil-save-btn">💾 Guardar cambios</button>
+            <button class="ghost-btn" type="button" id="perfil-promote-mod-btn">🛡️ Promover a moderador</button>
+          </div>
+          <div id="perfil-feedback" class="feedback-msg hidden"></div>
+        </article>
+
+        <!-- Info de cuenta + registro de moderador -->
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+          <article class="panel-card">
+            <div class="panel-header">
+              <div><p class="eyebrow">Información</p><h3>Datos actuales</h3></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.65rem;padding:0.25rem 0;">
+              <div class="mini-stat"><span class="mini-label">Nombre</span><strong id="perfil-info-nombre">—</strong></div>
+              <div class="mini-stat"><span class="mini-label">Email</span><strong id="perfil-info-email">—</strong></div>
+              <div class="mini-stat"><span class="mini-label">Rol</span><strong id="perfil-info-rol">—</strong></div>
+              <div class="mini-stat"><span class="mini-label">Estado</span><strong id="perfil-info-estado">—</strong></div>
+              <div class="mini-stat"><span class="mini-label">Miembro desde</span><strong id="perfil-info-desde">—</strong></div>
+            </div>
+          </article>
+
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+  <script>
+    document.getElementById('matctrl-entry').href = '/matctrl/';
+  </script>
+  <script src="diagramas-interactivos.js"></script>
+  <script src="student-dashboard.js"></script>
+  <script src="encyclopedia.js"></script>
+ <!-- <script src="profesor-dashboard.js"></script>-->
+</body>
+</html>

@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mi perfil — Luta e Dança</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/png">
+  <link rel="stylesheet" href="web/css/app.css">
+  <link rel="stylesheet" href="diagramas-interactivos.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="inicio.html"><img class="brand-logo" src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA">LUTA<em>·DANÇA</em></a>
+    <nav class="nav-links">
+      <a href="inicio.html">Inicio</a>
+      <a href="index.html">Feed</a>
+      <a href="foro.html">Foro</a>
+      <a href="puzzles.html">Puzzles</a>
+      <a href="encyclopedia.html">Enciclopedia</a>
+      <a href="informacion.html">Información</a>
+    </nav>
+    <span id="cabecera-usuario" style="margin-left:auto; color:var(--muted)"></span>
+    <a class="btn" id="btn-moderador" href="moderador.html" style="display:none">Panel moderador</a>
+    <a class="btn" href="notificaciones.html" id="btn-notis">Notif.</a>
+    <button class="sutil" id="btn-salir">Salir</button>
+  </header>
+
+  <div class="tabs">
+    <button data-pan="publicar">Publicar</button>
+    <button data-pan="mio">Mi contenido</button>
+    <button data-pan="comunidad">Comunidad</button>
+    <button data-pan="monetizacion">Monetización</button>
+    <button data-pan="tracking">Body tracking</button>
+    <button data-pan="puzzles">Simulador</button>
+    <button data-pan="streaming">Torneos y directos</button>
+    <button data-pan="acerca">Acerca de</button>
+    <button data-pan="perfil">Perfil</button>
+  </div>
+
+  <section class="panel" id="pan-publicar" style="display:none"></section>
+  <section class="panel" id="pan-mio" style="display:none"></section>
+  <section class="panel" id="pan-comunidad" style="display:none"></section>
+  <section class="panel" id="pan-monetizacion" style="display:none"></section>
+  <section class="panel" id="pan-tracking" style="display:none"></section>
+  <section class="panel" id="pan-puzzles" style="display:none"></section>
+  <section class="panel" id="pan-streaming" style="display:none"></section>
+  <section class="panel" id="pan-acerca" style="display:none"></section>
+  <section class="panel" id="pan-perfil" style="display:none"></section>
+
+  <footer class="footer">Luta e Dança</footer>
+
+  <script src="web/js/api.js"></script>
+  <script src="diagramas-interactivos.js"></script>
+  <script>
+    let estado = { user: null };
+
+    function login() {
+      if (!estado.user) {
+        location.href = 'login.html';
+        return true;
+      }
+      return false;
+    }
+
+    async function yo() {
+      const data = await API.get('/api/auth/yo');
+      estado.user = data.user;
+      API.guardarSesion(data.user, API.tokens.get());
+      const enc = document.getElementById('cabecera-usuario');
+      enc.textContent = `${data.user.nombre} · ${data.user.rol}${data.user.modo_creador ? ' · creador' : ''}`;
+      document.getElementById('btn-moderador').style.display = (data.user.rol === 'moderador' || data.user.rol === 'admin') ? 'inline-block' : 'none';
+      API.get('/api/notificaciones').then(d => {
+        const n = document.getElementById('btn-notis');
+        if (n && d.no_leidas) n.textContent = `Notif. (${d.no_leidas})`;
+      }).catch(() => {});
+    }
+
+    function esc(s) { return API.esc(s); }
+
+    /* ────────── tabs ────────── */
+    const tabs = document.querySelectorAll('.tabs button');
+    function activar(pan) {
+      tabs.forEach(b => b.classList.toggle('activo', b.dataset.pan === pan));
+      document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+      document.getElementById(`pan-${pan}`).style.display = 'block';
+      renderPan(pan);
+    }
+    tabs.forEach(b => b.addEventListener('click', () => activar(b.dataset.pan)));
+
+    const r = { publicar: renderPublicar, mio: renderMio, comunidad: renderComunidad, monetizacion: renderMonetizacion, tracking: renderTracking, puzzles: renderPuzzles, streaming: renderStreaming, acerca: renderAcerca, perfil: renderPerfil };
+
+    async function renderPan(pan) {
+      try { await r[pan](); } catch (e) { API.toast(e.message, 'err'); }
+    }
+
+    /* ────────── PUBLICAR ────────── */
+    async function renderPublicar() {
+      const pan = document.getElementById('pan-publicar');
+      if (!estado.user.modo_creador) {
+        pan.innerHTML = `
+          <div class="cuadro">
+            <h4>Activa el modo creador</h4>
+            <p class="span-mut">Para publicar videos, imágenes o instruccionales y monetizarlos, activa tu modo creador. Cualquier miembro puede hacerlo. Los diagramas sí puedes crearlos sin activarlo.</p>
+            <button class="primario" id="btn-modo-creador">Activar modo creador</button>
+          </div>
+          ${formularioDiagrama()}`;
+        document.getElementById('btn-modo-creador').addEventListener('click', async () => {
+          try {
+            const d = await API.post('/api/auth/modo-creador');
+            estado.user = d.user;
+            API.guardarSesion(d.user, API.tokens.get());
+            API.toast('¡Modo creador activado!', 'ok');
+            renderPublicar();
+          } catch (err) { API.toast(err.message, 'err'); }
+        });
+        vincularDiagrama();
+        return;
+      }
+      pan.innerHTML = `
+        <div class="tabs" style="padding:0;border:none;margin-bottom:14px" data-tipo-form>
+          <button class="activo" data-t="video">Video</button>
+          <button data-t="imagen">Imagen</button>
+          <button data-t="instruccional">Instruccional</button>
+          <button data-t="diagrama">Diagrama</button>
+        </div>
+        <div id="form-container">${formularioVideo()}</div>`;
+
+      const label = (n, l) => `<div class="campo"><label>${l}</label>${n}</div>`;
+
+      pan.querySelector('[data-tipo-form]').querySelectorAll('button').forEach(b => {
+        b.addEventListener('click', () => {
+          pan.querySelectorAll('[data-tipo-form] button').forEach(x => x.classList.toggle('activo', x === b));
+          const t = b.dataset.t;
+          document.getElementById('form-container').innerHTML =
+            t === 'video' ? formularioVideo() :
+            t === 'imagen' ? formularioImagen() :
+            t === 'instruccional' ? formularioInstruccional() : formularioDiagrama();
+          vincularForm(t);
+        });
+      });
+      vincularForm('video');
+    }
+
+    const monetizacionHTML = (conPrecio = true) => `
+      <div class="cuadro">
+        <h4>Monetización</h4>
+        <label style="display:flex;align-items:center;gap:8px">
+          <input type="checkbox" id="f-monetizado"> <span>¿Contenido de pago?</span>
+        </label>
+        <div class="fila" style="margin-top:10px;display:none" id="f-monedet">
+          <div class="campo"><label>Precio (USD)</label><input type="number" id="f-precio" min="0" step="0.01" value="5"></div>
+          <div class="campo"><label>Tipo de venta</label>
+            <select id="f-tipo-venta"><option value="pago_unico">Pago único</option><option value="suscripcion">Suscripción al creador</option></select>
+          </div>
+        </div>
+      </div>`;
+
+    function formularioVideo() {
+      return `<form class="form-grid" id="form-video" enctype="multipart/form-data">
+        <div class="campo"><label>Título *</label><input type="text" name="titulo" required></div>
+        <div class="fila">
+          <div class="campo"><label>Categoría</label><input type="text" name="categoria"></div>
+          <div class="campo"><label>Dificultad</label><select name="dificultad"><option value="basico">Básico</option><option value="intermedio">Intermedio</option><option value="avanzado">Avanzado</option></select></div>
+        </div>
+        <div class="campo"><label>Descripción</label><textarea name="descripcion" rows="3"></textarea></div>
+        <div class="campo"><label>Hashtags (separados por coma)</label><input type="text" name="hashtags" placeholder="barrido, nexo"></div>
+        <div class="campo"><label>Archivo de video *</label><input type="file" name="video" accept="video/*" required></div>
+        ${monetizacionHTML()}
+        <button class="primario block" type="submit">Publicar video</button>
+      </form>`;
+    }
+    function formularioImagen() {
+      return `<form class="form-grid" id="form-imagen" enctype="multipart/form-data">
+        <div class="campo"><label>Título *</label><input type="text" name="titulo" required></div>
+        <div class="fila">
+          <div class="campo"><label>Tipo de imagen</label>
+            <select name="tipo">
+              <option value="diagrama">Diagrama</option>
+              <option value="foto_posicion">Foto de posición</option>
+              <option value="captura">Captura</option>
+              <option value="infografia">Infografía</option>
+              <option value="otro">Otro</option>
+            </select></div>
+        </div>
+        <div class="campo"><label>Descripción</label><textarea name="descripcion" rows="3"></textarea></div>
+        <div class="campo"><label>Hashtags</label><input type="text" name="hashtags"></div>
+        <div class="campo"><label>Imagen *</label><input type="file" id="input-imagen" name="imagen" accept="image/*" required></div>
+        <div class="cuadro">
+          <h4>O dibuja una imagen</h4>
+          <div class="toolbox">
+            <label>Color <input type="color" id="p-col" value="#111111"></label>
+            <label>Trazo <input type="range" id="p-size" min="1" max="40" value="6"></label>
+            <button type="button" class="btn-mini" id="p-eraser">Borrador</button>
+            <button type="button" class="btn-mini" id="p-clear">Limpiar</button>
+            <button type="button" class="btn-mini primario" id="p-apply">Usar dibujo como imagen</button>
+          </div>
+          <canvas class="lienzo" id="p-lienzo" width="800" height="440"></canvas>
+          <p class="span-mut" id="p-estado">Dibuja y pulsa «Usar dibujo como imagen» para adjuntarlo al formulario.</p>
+        </div>
+        ${monetizacionHTML()}
+        <button class="primario block" type="submit">Publicar imagen</button>
+      </form>`;
+    }
+    function formularioInstruccional() {
+      return `<form class="form-grid" id="form-instruccional" enctype="multipart/form-data">
+        <div class="campo"><label>Título *</label><input type="text" name="titulo" required></div>
+        <div class="fila">
+          <div class="campo"><label>Nivel</label><select name="nivel">
+            <option value="principiante">Básico</option>
+            <option value="intermedio">Intermedio</option>
+            <option value="avanzado">Avanzado</option>
+          </select></div>
+          <div class="campo"><label>Categoría</label><input type="text" name="categoria"></div>
+        </div>
+        <div class="campo"><label>Descripción</label><textarea name="descripcion" rows="3"></textarea></div>
+        <div class="campo"><label>Miniatura (portada, opcional)</label><input type="file" name="portada" accept="image/*"></div>
+        <div class="cuadro" id="inst-contenido">
+          <h4>Contenido del instruccional (lecciones)</h4>
+          <p class="span-mut">Cada lección enlaza un elemento (video, imagen o diagrama) y puede llevar su propio título, descripción y nota.</p>
+          <button type="button" class="btn-mini" id="les-nueva">+ Añadir lección</button>
+          <div id="les-builder"></div>
+          <div id="les-lista"></div>
+          <input type="hidden" name="secciones">
+          <input type="hidden" name="videos_ids">
+          <input type="hidden" name="imagenes_ids">
+          <input type="hidden" name="diagrama_ids">
+        </div>
+        ${monetizacionHTML()}
+        <button class="primario block" type="submit">Publicar instruccional</button>
+      </form>`;
+    }
+    function formularioDiagrama() {
+      return `<form class="form-grid" id="form-diagrama">
+        <div class="campo"><label>Título *</label><input type="text" name="titulo" required></div>
+        <div class="fila">
+          <div class="campo"><label>Tipo de diagrama</label>
+            <select name="tipo">
+              <option value="arbol_decision">Árbol de decisión</option>
+              <option value="flujo_posiciones">Flujo de posiciones</option>
+              <option value="sistema_juego">Sistema de juego</option>
+              <option value="cadena_sumision">Cadena de sumisiones</option>
+            </select></div>
+          <div class="campo"><label>ID de instruccional asociado</label><input type="text" name="instruccional_id" placeholder="Ej: 3 (opcional)"></div>
+        </div>
+        <div class="campo"><label>Descripción</label><textarea name="descripcion" rows="2"></textarea></div>
+        <div class="campo"><label>Referencia de enciclopedia</label><input type="text" name="enciclopedia_ref" placeholder="Ej: closed-guard"></div>
+        <div class="cuadro">
+          <h4>Editor de nodos</h4>
+          <p class="span-mut">Añade nodos, conéctalos y configura cada uno: nombre, categoría (color), descripción, imagen y video.</p>
+          <div id="dg-host" style="height:480px;min-height:400px"></div>
+        </div>
+        <input type="hidden" name="nodos" value="">
+        ${monetizacionHTML()}
+        <button class="primario block" type="submit">Publicar diagrama</button>
+      </form>`;
+    }
+
+    function vincularMonetizacion() {
+      const ck = document.getElementById('f-monetizado');
+      const det = document.getElementById('f-monedet');
+      if (!ck) return;
+      ck.addEventListener('change', () => { det.style.display = ck.checked ? 'flex' : 'none'; });
+    }
+
+    async function enviarForm(tipo, form) {
+      const fd = new FormData(form);
+      if (form.querySelector('#f-monetizado')) {
+        fd.set('monetizado', String(form.querySelector('#f-monetizado').checked));
+        fd.set('precio', String(form.querySelector('#f-precio')?.value || 0));
+        fd.set('tipo_venta', form.querySelector('#f-tipo-venta')?.value || 'gratis');
+      }
+      const res = await API.post(`/api/contenido/${tipo}`, fd);
+      API.toast(`${tipo === 'video' ? 'Video' : 'Contenido'} publicado`, 'ok');
+      form.reset();
+      return res;
+    }
+
+    function vincularForm(tipo) {
+      vincularMonetizacion();
+      const form = document.getElementById(`form-${tipo}`);
+      if (!form) return;
+      if (tipo === 'imagen') initEditorImagen();
+      if (tipo === 'diagrama') initEditorDiagrama();
+      if (tipo === 'instruccional') cargarEditorInstruccional(form);
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (tipo === 'diagrama') {
+          const oculto = form.querySelector('[name="nodos"]');
+          if (oculto) oculto.value = dgJson();
+        }
+        enviarForm(tipo, form).catch(err => API.toast(err.data?.message || err.message, 'err'));
+      });
+    }
+
+    function vincularDiagrama() {
+      vincularMonetizacion();
+      initEditorDiagrama();
+      const form = document.getElementById('form-diagrama');
+      if (form) form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const oculto = form.querySelector('[name="nodos"]');
+        if (oculto) oculto.value = dgJson();
+        enviarForm('diagrama', form).catch(err => API.toast(err.data?.message || err.message, 'err'));
+      });
+    }
+
+    /* ────────── EDITOR DE IMÁGENES (canvas) ────────── */
+    function initEditorImagen() {
+      const cv = document.getElementById('p-lienzo');
+      if (!cv) return;
+      const ctx = cv.getContext('2d');
+      const col = document.getElementById('p-col');
+      let dibujando = false;
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = col.value;
+
+      const pos = (e) => { const r = cv.getBoundingClientRect(); const k = cv.width / r.width; return [(e.clientX - r.left) * k, (e.clientY - r.top) * k]; };
+
+      cv.addEventListener('mousedown', (e) => {
+        dibujando = true;
+        const [x, y] = pos(e);
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+      });
+      cv.addEventListener('mousemove', (e) => {
+        if (!dibujando) return;
+        const [x, y] = pos(e);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      });
+      const suelta = () => { dibujando = false; };
+      cv.addEventListener('mouseup', suelta);
+      cv.addEventListener('mouseleave', suelta);
+
+      document.getElementById('p-eraser').addEventListener('click', () => {
+        ctx.strokeStyle = '#ffffff';
+        document.getElementById('p-estado').textContent = 'Borrador: borrarás moviendo el ratón sobre el lienzo.';
+      });
+      document.getElementById('p-clear').addEventListener('click', () => {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, cv.width, cv.height);
+        document.getElementById('p-estado').textContent = 'Lienzo limpio.';
+      });
+      col.addEventListener('input', () => { ctx.strokeStyle = col.value; });
+      document.getElementById('p-size').addEventListener('input', () => { ctx.lineWidth = Number(document.getElementById('p-size').value); });
+
+      document.getElementById('p-apply').addEventListener('click', () => {
+        const inp = document.getElementById('input-imagen');
+        const est = document.getElementById('p-estado');
+        cv.toBlob((blob) => {
+          if (!blob) { est.textContent = 'No se pudo generar la imagen.'; return; }
+          const f = new File([blob], 'dibujo.png', { type: 'image/png' });
+          const dt = new DataTransfer();
+          dt.items.add(f);
+          inp.files = dt.files;
+          est.textContent = 'Dibujo listo. Se publicará junto con el formulario.';
+        }, 'image/png');
+      });
+    }
+
+    /* ────────── EDITOR DE DIAGRAMAS (motor interactivo) ────────── */
+    let dgEditor = null;
+    let dgDraft = { nodes: [], edges: [] };
+
+    function dgJson() {
+      if (dgEditor) {
+        dgDraft = dgEditor.getData();
+        return JSON.stringify(dgDraft);
+      }
+      return '{"nodes":[],"edges":[]}';
+    }
+
+    function initEditorDiagrama() {
+      const host = document.getElementById('dg-host');
+      if (!host || typeof DiagramCanvas === 'undefined') return;
+      if (dgEditor && dgEditor.host !== host) {
+        dgEditor.destroy();
+        dgEditor = null;
+      }
+      if (!dgEditor) {
+        dgEditor = new DiagramCanvas(host, { mode: 'edit', onChange: d => { dgDraft = d; } });
+        dgEditor.observeResize(document.getElementById('form-diagrama'));
+      }
+      dgEditor.loadData(dgDraft);
+      requestAnimationFrame(() => dgEditor.init());
+    }
+
+    /* ────────── INSTRUCCIONALES: builder de lecciones ────────── */
+    let instGrupos = { video: [], imagen: [], diagrama: [] };
+    let instSecciones = [];
+    let instEditIdx = -1;
+
+    function instNombreElemento(tipo, id) {
+      const it = (instGrupos[tipo] || []).find(x => Number(x.id) === Number(id));
+      return it ? it.titulo : `#${id}`;
+    }
+
+    function instSincronizar() {
+      const form = document.getElementById('form-instruccional');
+      if (!form) return;
+      form.querySelector('[name="secciones"]').value = JSON.stringify(instSecciones);
+      form.querySelector('[name="videos_ids"]').value = JSON.stringify(instSecciones.filter(s => s.tipo === 'video').map(s => s.id));
+      form.querySelector('[name="imagenes_ids"]').value = JSON.stringify(instSecciones.filter(s => s.tipo === 'imagen').map(s => s.id));
+      form.querySelector('[name="diagrama_ids"]').value = JSON.stringify(instSecciones.filter(s => s.tipo === 'diagrama').map(s => s.id));
+    }
+
+    function instRenderSumario() {
+      const lista = document.getElementById('les-lista');
+      if (!lista) return;
+      if (!instSecciones.length) {
+        lista.innerHTML = `<p class="span-mut">Sin lecciones todavía. Pulsa «+ Añadir lección».</p>`;
+      } else {
+        lista.innerHTML = instSecciones.map((s, i) => `
+          <div class="cuadro" data-idx="${i}" style="margin:6px 0;padding:10px 12px">
+            <div class="fila" style="align-items:center;gap:8px">
+              <span class="chip">${esc(s.tipo)}</span>
+              <strong style="flex:1">${esc(s.titulo)}</strong>
+              <span class="span-mut">↳ ${esc(instNombreElemento(s.tipo, s.id))}</span>
+              <div class="fila" style="gap:4px">
+                <button type="button" class="btn-mini" data-les="ed">Editar</button>
+                <button type="button" class="btn-mini" data-les="up" ${i === 0 ? 'disabled' : ''}>↑</button>
+                <button type="button" class="btn-mini" data-les="down" ${i === instSecciones.length - 1 ? 'disabled' : ''}>↓</button>
+                <button type="button" class="btn-mini" data-les="del">✕</button>
+              </div>
+            </div>
+            ${s.descripcion ? `<p class="span-mut" style="margin:6px 0 0">${esc(s.descripcion)}</p>` : ''}
+            ${s.nota ? `<p class="span-mut" style="margin:4px 0 0">⚠ ${esc(s.nota)}</p>` : ''}
+          </div>`).join('');
+      }
+      lista.querySelectorAll('[data-les]').forEach(b => b.addEventListener('click', () => {
+        const i = Number(b.closest('[data-idx]').dataset.idx);
+        const accion = b.dataset.les;
+        if (accion === 'del') { instSecciones.splice(i, 1); instEditIdx = -1; instRenderBuilder(); instRenderSumario(); return; }
+        if (accion === 'up' && i > 0) { instSecciones.splice(i - 1, 0, instSecciones.splice(i, 1)[0]); }
+        if (accion === 'down' && i < instSecciones.length - 1) { instSecciones.splice(i + 1, 0, instSecciones.splice(i, 1)[0]); }
+        if (accion === 'ed') { instEditIdx = i; instRenderBuilder(instSecciones[i]); }
+        instRenderSumario();
+      }));
+      instSincronizar();
+    }
+
+    function instRenderElementos() {
+      const tipo = document.getElementById('les-tipo').value;
+      const sel = document.getElementById('les-elemento');
+      const items = instGrupos[tipo] || [];
+      sel.innerHTML = items.length
+        ? items.map(it => `<option value="${it.id}">#${it.id} · ${esc(it.titulo)}</option>`).join('')
+        : '<option value="">— No tienes elementos de este tipo —</option>';
+    }
+
+    function instRenderBuilder(datos) {
+      const b = document.getElementById('les-builder');
+      if (!b) return;
+      const s = datos ? { tipo: 'video', id: '', titulo: '', descripcion: '', nota: '', ...datos } : null;
+      if (!s) { b.innerHTML = ''; b.style.display = 'none'; return; }
+      const edicion = instEditIdx >= 0 && !!datos;
+      b.innerHTML = `
+        <div class="fila" style="gap:8px">
+          <div class="campo" style="flex:0 0 130px"><label>Tipo</label>
+            <select id="les-tipo">
+              <option value="video" ${s.tipo === 'video' ? 'selected' : ''}>Video</option>
+              <option value="imagen" ${s.tipo === 'imagen' ? 'selected' : ''}>Imagen</option>
+              <option value="diagrama" ${s.tipo === 'diagrama' ? 'selected' : ''}>Diagrama</option>
+            </select></div>
+          <div class="campo" style="flex:1"><label>Elemento *</label>
+            <select id="les-elemento"></select></div>
+        </div>
+        <div class="campo"><label>Título de la lección *</label>
+          <input type="text" id="les-titulo" value="${esc(s.titulo)}" placeholder="Ej: Guardia cerrada, primeros conceptos"></div>
+        <div class="campo"><label>Descripción de la lección</label>
+          <textarea id="les-desc" rows="2">${esc(s.descripcion)}</textarea></div>
+        <div class="campo"><label>Nota / consigna (opcional)</label>
+          <input type="text" id="les-nota" value="${esc(s.nota)}" placeholder="Ej: mira el grip antes de la barrida"></div>
+        <div class="fila" style="gap:8px">
+          <button type="button" class="btn" id="les-guardar">${edicion ? 'Guardar cambios' : 'Agregar lección'}</button>
+          <button type="button" class="sutil" id="les-cancelar">Cancelar</button>
+        </div>`;
+      b.style.display = 'block';
+      b.querySelector('#les-tipo').addEventListener('change', instRenderElementos);
+      instRenderElementos();
+      if (s.id !== '' && s.id !== undefined && s.id !== null) {
+        const sel = b.querySelector('#les-elemento');
+        if (Array.from(sel.options).some(o => o.value === String(s.id))) sel.value = String(s.id);
+      }
+      b.querySelector('#les-guardar').addEventListener('click', () => {
+        const tipo = b.querySelector('#les-tipo').value;
+        const idEl = parseInt(b.querySelector('#les-elemento').value, 10);
+        const titulo = b.querySelector('#les-titulo').value.trim() || instNombreElemento(tipo, idEl);
+        if (!idEl || !titulo) { alert('Selecciona un elemento y pon un título a la lección.'); return; }
+        const leccion = {
+          tipo,
+          id: idEl,
+          titulo: String(titulo).slice(0, 200),
+          descripcion: b.querySelector('#les-desc').value.trim(),
+          nota: b.querySelector('#les-nota').value.trim(),
+        };
+        if (instEditIdx >= 0) instSecciones[instEditIdx] = leccion;
+        else instSecciones.push(leccion);
+        instEditIdx = -1;
+        instRenderBuilder();
+        instRenderSumario();
+      });
+      b.querySelector('#les-cancelar').addEventListener('click', () => {
+        instEditIdx = -1;
+        instRenderBuilder();
+      });
+    }
+
+    async function cargarEditorInstruccional(form) {
+      const cont = form.querySelector('#inst-contenido');
+      if (!cont) return;
+      try {
+        const data = await API.get('/api/contenido/mio?limit=200');
+        instGrupos = { video: [], imagen: [], diagrama: [] };
+        (data.items || []).forEach(it => { if (instGrupos[it.tipo]) instGrupos[it.tipo].push(it); });
+      } catch (_e) { /* sin contenido propio todavía */ }
+      instSecciones = [];
+      instEditIdx = -1;
+      cont.querySelector('#les-nueva').addEventListener('click', () => { instEditIdx = -1; instRenderBuilder({ tipo: 'video', id: '', titulo: '', descripcion: '', nota: '' }); });
+      instRenderBuilder();
+      instRenderSumario();
+    }
+
+    /* ────────── MI CONTENIDO ────────── */
+    async function renderMio() {
+      const pan = document.getElementById('pan-mio');
+      const data = await API.get('/api/contenido/mio');
+      const items = data.items;
+      if (!items.length) {
+        pan.innerHTML = `<div class="hueco">Aún no has publicado nada. Ve a «Publicar».</div>`;
+        return;
+      }
+      pan.innerHTML = items.map(it => `
+        <div class="cuadro">
+          <div class="fila" style="align-items:center">
+            <div style="flex:1">
+              <strong>${esc(it.tipo)} · ${esc(it.titulo)}</strong>
+              <div class="span-mut">${API.numero(it.vistas)} vistas · ${API.fecha(it.creado_en)}
+                ${it.monetizado ? ` · <span class="span-ok">${esc(it.tipo_venta)} ${API.precio(it.precio)}</span>` : ' · gratis'}</div>
+              ${(it.hashtags || []).map(t => `<span class="chip">#${esc(t)}</span>`).join('')}
+            </div>
+            <div class="fila" style="min-width:180px">
+              <a class="btn sutil" href="detalle.html?tipo=${esc(it.tipo)}&id=${esc(it.id)}">Ver</a>
+              <button class="btn peligro" data-del="${it.tipo}:${it.id}">Borrar</button>
+            </div>
+          </div>
+          ${it.tipo === 'video'
+            ? `<details style="margin-top:8px"><summary class="span-mut">Ajustes de monetización / portada</summary>
+                <form data-ajuste="${it.tipo}:${it.id}" class="fila" style="margin-top:8px">
+                  <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" data-mon="${it.id}" ${it.monetizado ? 'checked' : ''}> monetizado</label>
+                  <input type="number" step="0.01" min="0" data-precio="${it.id}" value="${it.precio}" style="max-width:90px">
+                  <select data-venta="${it.id}"><option value="pago_unico" ${it.tipo_venta === 'pago_unico' ? 'selected' : ''}>Pago único</option><option value="suscripcion" ${it.tipo_venta === 'suscripcion' ? 'selected' : ''}>Suscripción</option><option value="gratis" ${it.tipo_venta === 'gratis' ? 'selected' : ''}>Gratis</option></select>
+                  <button class="btn">Guardar</button>
+                </form>
+                <form data-portada="${it.id}" enctype="multipart/form-data" class="fila" style="margin-top:8px">
+                  <input type="file" name="portada" accept="image/*">
+                  <button class="btn">Subir portada</button>
+                </form>
+              </details>` : ''}
+        </div>`).join('');
+
+      pan.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', async () => {
+        const [tipo, id] = b.dataset.del.split(':');
+        if (!confirm('¿Eliminar este contenido?')) return;
+        try { await API.del(`/api/contenido/${tipo}/${id}`); API.toast('Eliminado', 'ok'); renderMio(); }
+        catch (e) { API.toast(e.message, 'err'); }
+      }));
+
+      pan.querySelectorAll('form[data-ajuste]').forEach(f => f.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const [tipo, id] = f.dataset.ajuste.split(':');
+        try {
+          await API.put(`/api/contenido/${tipo}/${id}`, {
+            monetizado: f.querySelector(`[data-mon="${id}"]`).checked,
+            precio: Number(f.querySelector(`[data-precio="${id}"]`).value) || 0,
+            tipo_venta: f.querySelector(`[data-venta="${id}"]`).value,
+          });
+          API.toast('Monetización actualizada', 'ok');
+        } catch (err) { API.toast(err.message, 'err'); }
+      }));
+
+      pan.querySelectorAll('form[data-portada]').forEach(f => f.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = f.dataset.portada;
+        try {
+          const fd = new FormData(f);
+          const r = await API.post(`/api/contenido/video/${id}/portada`, fd);
+          API.toast('Portada subida', 'ok');
+          renderMio();
+        } catch (err) { API.toast(err.message, 'err'); }
+      }));
+    }
+
+    /* ────────── COMUNIDAD ────────── */
+    async function renderComunidad() {
+      const pan = document.getElementById('pan-comunidad');
+      if (login()) return;
+      const data = await API.get('/api/contenido/comentarios-recibidos');
+      let html = `<h2 style="font-size:1.1rem; margin-bottom:12px">Actividad de tu comunidad</h2>`;
+      html += `<div class="cuadro"><h4>Me gusta recibidos · ${API.numero(data.total_likes)}</h4>`;
+      if (!data.likes.length) html += `<p class="span-mut">Todavía no tienes me gusta.</p>`;
+      else html += data.likes.map(l => `
+        <div class="fila" style="align-items:center; border-top:1px solid var(--border); padding:8px 0">
+          <div style="flex:1"><strong>${esc(l.titulo)}</strong> <span class="span-mut">· ${esc(l.contenido_tipo)}</span></div>
+          <span>${API.numero(l.cant)} ♥</span>
+          <a class="btn-mini" href="detalle.html?tipo=${esc(l.contenido_tipo)}&id=${esc(l.contenido_id)}">Ver</a>
+        </div>`).join('');
+      html += `</div>`;
+
+      html += `<div class="cuadro"><h4>Comentarios recibidos · ${API.numero(data.total_comentarios)}</h4>`;
+      if (!data.comentarios.length) html += `<p class="span-mut">Aún no tienes comentarios.</p>`;
+      else html += data.comentarios.map(c => `
+        <div style="border-top:1px solid var(--border); padding:10px 0">
+          <p style="margin:0"><strong>${esc(c.autor_nombre)}</strong> <span class="span-mut">comentó en</span> <a href="detalle.html?tipo=${esc(c.contenido_tipo)}&id=${esc(c.contenido_id)}"><strong>${esc(c.titulo)}</strong></a> <span class="span-mut">· ${API.fecha(c.creado_en)}</span></p>
+          <p style="margin:4px 0 0">${esc(c.mensaje)}</p>
+        </div>`).join('');
+      html += `</div>`;
+
+      pan.innerHTML = html;
+    }
+
+    /* ────────── MONETIZACIÓN ────────── */
+    async function renderMonetizacion() {
+      const pan = document.getElementById('pan-monetizacion');
+      let html = '';
+      html += `<div class="cuadro"><h4>Mis suscripciones</h4>
+        <div id="mis-subs"></div></div>`;
+      html += `<div class="cuadro"><h4>Mis compras</h4>
+        <div id="mis-compras"></div></div>`;
+      if (estado.user.modo_creador) {
+        html += `<div class="cuadro"><h4>Mis ingresos</h4>
+          <div id="mis-ingresos"></div></div>`;
+        html += `<div class="cuadro"><h4>Crear plan de suscripción</h4>
+          <form id="form-plan" class="form-grid">
+            <div class="campo"><label>Nombre *</label><input type="text" name="nombre" required></div>
+            <div class="campo"><label>Descripción</label><input type="text" name="descripcion"></div>
+            <div class="fila">
+              <div class="campo"><label>Precio (USD) *</label><input type="number" name="precio" min="0.01" step="0.01" required></div>
+              <div class="campo"><label>Periodicidad</label><select name="periodicidad"><option value="mensual">Mensual</option><option value="anual">Anual</option></select></div>
+            </div>
+            <button class="primario block">Crear plan</button>
+          </form>
+          <div id="mis-planes" style="margin-top:12px"></div></div>`;
+      }
+      pan.innerHTML = html;
+
+      const cargarSubs = API.get('/api/monetizacion/mis-suscripciones');
+      const cargarCompras = API.get('/api/monetizacion/mis-compras');
+
+      cargarSubs.then(d => {
+        const cont = document.getElementById('mis-subs');
+        if (!d.items.length) { cont.innerHTML = `<p class="span-mut">Aún no estás suscrito a ningún creador.</p>`; return; }
+        const tabla = document.createElement('table');
+        tabla.className = 'tabla';
+        tabla.innerHTML = `<tr><th>Plan</th><th>Creador</th><th>Estado</th><th></th></tr>` + d.items.map(s => `
+          <tr><td>${esc(s.plan_nombre)}</td><td>${esc(s.creador_nombre)}</td><td>${esc(s.estado)}</td>
+          <td>${s.estado === 'activa' ? `<button data-cancel="${s.id}">Cancelar</button>` : ''}</td></tr>`).join('');
+        cont.appendChild(tabla);
+        cont.querySelectorAll('[data-cancel]').forEach(b => b.addEventListener('click', async () => {
+          try { await API.post(`/api/monetizacion/suscripciones/${b.dataset.cancel}/cancelar`); API.toast('Suscripción cancelada', 'ok'); renderMonetizacion(); }
+          catch (e) { API.toast(e.message, 'err'); }
+        }));
+      }).catch(e => API.toast(e.message, 'err'));
+
+      cargarCompras.then(d => {
+        const cont = document.getElementById('mis-compras');
+        if (!d.items.length) { cont.innerHTML = `<p class="span-mut">Aún no has comprado nada.</p>`; return; }
+        const tabla = document.createElement('table');
+        tabla.className = 'tabla';
+        tabla.innerHTML = `<tr><th>Contenido</th><th>Monto</th><th>Ref</th><th>Fecha</th></tr>` + d.items.map(c => `
+          <tr><td>${esc(c.contenido_tipo)} #${c.contenido_id}</td><td>${API.precio(c.monto)}</td><td>${esc(c.referencia)}</td><td>${API.fecha(c.creado_en)}</td></tr>`).join('');
+        cont.appendChild(tabla);
+      }).catch(e => API.toast(e.message, 'err'));
+
+      if (estado.user.modo_creador) {
+        API.get('/api/monetizacion/mis-ingresos').then(d => {
+          const cont = document.getElementById('mis-ingresos');
+          cont.innerHTML = `
+            <p><strong>${API.precio(d.totales.bruto)}</strong> bruto → <strong class="span-ok">${API.precio(d.totales.neto)}</strong> neto · comisión promedio ${(Number(d.totales.comision_promedio) * 100).toFixed(0)}%</p>
+            <table class="tabla"><tr><th>Concepto</th><th>Bruto</th><th>Comisión</th><th>Neto</th></tr>` +
+            d.items.map(i => `<tr><td>${esc(i.concepto)}</td><td>${API.precio(i.monto_bruto)}</td><td>${(Number(i.comision_efectiva) * 100).toFixed(0)}%</td><td>${API.precio(i.monto_neto)}</td></tr>`).join('') + `</table>`;
+        }).catch(e => API.toast(e.message, 'err'));
+
+        document.getElementById('form-plan').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const f = e.target;
+          try {
+            const body = { nombre: f.nombre.value, descripcion: f.descripcion.value, precio: f.precio.value, periodicidad: f.periodicidad.value };
+            await API.post('/api/monetizacion/planes', body);
+            API.toast('Plan creado', 'ok');
+            f.reset();
+            renderMonetizacion();
+          } catch (err) { API.toast(err.message, 'err'); }
+        });
+
+        API.get(`/api/monetizacion/planes?creador=${estado.user.id}`).then(d => {
+          const cont = document.getElementById('mis-planes');
+          cont.innerHTML = d.items.map(p => `
+            <div class="fila" style="align-items:center;margin-bottom:6px">
+              <span>${esc(p.nombre)} · ${API.precio(p.precio)}/${esc(p.periodicidad)} ${p.activo ? '<span class="span-ok">activo</span>' : '<span class="span-err">desactivado</span>'}</span>
+              ${p.activo ? `<button data-planoff="${p.id}">Desactivar</button>` : ''}
+            </div>`).join('');
+          cont.querySelectorAll('[data-planoff]').forEach(b => b.addEventListener('click', async () => {
+            try { await API.del(`/api/monetizacion/planes/${b.dataset.planoff}`); API.toast('Plan desactivado', 'ok'); renderMonetizacion(); }
+            catch (e) { API.toast(e.message, 'err'); }
+          }));
+        }).catch(e => API.toast(e.message, 'err'));
+      }
+    }
+
+    /* ────────── BODY TRACKING ────────── */
+    async function renderTracking() {
+      const pan = document.getElementById('pan-tracking');
+      const d = await API.get('/api/yo/body-tracking');
+      pan.innerHTML = `
+        <div class="cuadro">
+          <h4>Progreso corporal</h4>
+          <p class="span-mut">${esc(d.mensaje)}</p>
+          <p>Aquí podrás registrar peso, medidas y métricas de composición corporal, con gráficas de evolución junto a tu plan. Prepárate… 📈</p>
+        </div>
+        <div class="cuadro">
+          <h4>Objetivos recomendados</h4>
+          <ul class="span-mut">
+            <li>Control semanal de peso y medidas.</li>
+            <li>Registro de marcas en combate y técnica.</li>
+            <li>Sincronización con el diario de feeds (planes dietéticos).</li>
+          </ul>
+        </div>`;
+    }
+
+    /* ────────── SIMULADOR / PUZZLES ────────── */
+    async function renderPuzzles() {
+      const pan = document.getElementById('pan-puzzles');
+      pan.innerHTML = `
+        <div class="cuadro">
+          <h4>Simulador de técnicas</h4>
+          <p class="span-mut">Practica el árbol de decisiones del combate con IA opcional. Funciona dentro de tu perfil, sin salir de la plataforma.</p>
+          <p><a class="btn" href="puzzles.html" target="_blank">Abrir en pantalla completa ↗</a></p>
+          <div class="ratio16">
+            <iframe src="puzzles.html" title="Simulador de técnicas" loading="lazy"></iframe>
+          </div>
+        </div>`;
+    }
+
+    async function renderStreaming() {
+        const pan = document.getElementById('pan-streaming');
+        pan.innerHTML = `
+          <div class="cuadro">
+            <h4>Torneos y directos</h4>
+            <p class="span-mut">Crea y administra torneos, registra peleadores, genera llaves, lleva el marcador en vivo y publica retransmisiones con repetición.</p>
+            <p class="span-mut">El panel abre en una pestaña aparte para conservar sus controles de cámara y marcador.</p>
+            <a class="btn primario" href="/matctrl/" target="_blank" rel="noopener noreferrer">Abrir panel de torneos y directos</a>
+          </div>`;
+    }
+
+    /* ────────── ACERCA DE ────────── */
+    async function renderAcerca() {
+      const pan = document.getElementById('pan-acerca');
+      pan.innerHTML = `
+        <div class="cuadro" style="text-align:center">
+          <h1 style="margin:0">LUTA <span style="color:var(--accent2)">E</span> DANÇA</h1>
+          <p class="span-mut">Aprende de Grappling — una plataforma abierta de artes marciales y danza.</p>
+          <div class="ctas" style="justify-content:center">
+            <a class="btn primario" href="inicio.html">Ver página de presentación</a>
+          </div>
+        </div>
+
+        <div class="pilares" style="padding:0">
+          <div class="pilar"><h3>Base sólida</h3><p>Construye una base sólida para tu estilo de combate.</p></div>
+          <div class="pilar"><h3>Confianza corporal</h3><p>Pierde el miedo a pasar guardia, desarrolla confianza en tu cuerpo y mejora tu postura.</p></div>
+          <div class="pilar"><h3>Plan personalizado</h3><p>Crea un plan de pelea personalizado para alcanzar tus objetivos más rápido.</p></div>
+        </div>
+
+        <div class="centro" style="padding:0">
+          <h2 style="text-align:center">¡Eche un vistazo a lo que te espera!</h2>
+          <div class="ratio16">
+            <iframe src="https://www.youtube.com/embed/AoxU1CY-4Kg?mute=1&showinfo=0&start=0" allowfullscreen loading="lazy"></iframe>
+          </div>
+        </div>
+
+        <div class="doble" style="padding:0">
+          <div class="cuadro">
+            <h3>Sobre nosotros</h3>
+            <p class="span-mut">Con la digitalización, el mercado se inundó de plataformas de video bajo demanda y videotutoriales de larga duración protagonizados por competidores de élite.</p>
+          </div>
+          <div class="cuadro">
+            <h3>Nuestro problema</h3>
+            <p class="span-mut">Eso democratizó el acceso, pero originó la saturación de información desestructurada: plataformas repositorio pasivas que no enseñan cuándo ni cómo aplicar la técnica.</p>
+          </div>
+        </div>
+
+        <div class="cuadro" style="text-align:center">
+          <h3>Nuestra historia</h3>
+          <p class="span-mut">El sistema se concibe como una solución tecnológica global y escalable para la comunidad de deportes de combate, sin las limitaciones de un gimnasio o club específico.</p>
+        </div>`;
+    }
+
+    /* ────────── PERFIL ────────── */
+    async function renderPerfil() {
+      const pan = document.getElementById('pan-perfil');
+      const u = estado.user;
+      let solicitudHTML = '';
+      try {
+        const s = await API.get('/api/mod/solicitudes/mia');
+        solicitudHTML = s.item
+          ? `<p class="span-mut">Tu solicitud de moderador: <strong>${esc(s.item.estado)}</strong>${s.item.motivo ? ` — ${esc(s.item.motivo)}` : ''}</p>`
+          : `<button class="btn" id="btn-solicitud">Solicitar ser moderador</button>`;
+      } catch (_e) { solicitudHTML = `<p class="span-err">${esc(_e.message)}</p>`; }
+
+      pan.innerHTML = `
+        <div class="cuadro">
+          <h4>Mi perfil</h4>
+          <form class="form-grid" id="form-perfil">
+            <div class="campo"><label>Nombre</label><input type="text" name="nombre" value="${esc(u.nombre)}"></div>
+            <div class="campo"><label>Rango</label><input type="text" name="rango" value="${esc(u.rango || '')}"></div>
+            <div class="campo"><label>Biografía de creador</label><textarea name="bio_creador" rows="3">${esc(u.bio_creador || '')}</textarea></div>
+            <div class="campo"><label>Método de pago (ej. transferencia)</label><input type="text" name="metodo_pago" value="${esc(u.metodo_pago || '')}"></div>
+            <button class="primario block">Guardar perfil</button>
+          </form>
+        </div>
+        <div class="cuadro">
+          <h4>Rol en la comunidad</h4>
+          <p>Rol actual: <strong>${esc(u.rol)}</strong></p>
+          ${u.rol === 'moderador' || u.rol === 'admin'
+            ? `<p class="span-mut">Eres parte del equipo de moderación. Usa el panel moderador para gestionar solicitudes y comisiones.</p>`
+            : `${solicitudHTML}
+              <form id="form-promover" class="form-grid" style="margin-top:14px">
+                <div class="campo">
+                  <label for="codigo-moderador">Clave de autorización</label>
+                  <input id="codigo-moderador" name="codigo" type="password" minlength="32" maxlength="512" autocomplete="off" required>
+                </div>
+                <button class="btn" type="submit">Activar rol de moderador</button>
+                <p class="span-mut">Usa la clave de moderación proporcionada por la administración.</p>
+              </form>`}
+        </div>`;
+
+      document.getElementById('form-perfil').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const f = e.target;
+        try {
+          const d = await API.put('/api/auth/perfil', {
+            nombre: f.nombre.value,
+            rango: f.rango.value,
+            bio_creador: f.bio_creador.value,
+            metodo_pago: f.metodo_pago.value,
+          });
+          estado.user = d.user;
+          API.guardarSesion(d.user, API.tokens.get());
+          API.toast('Perfil actualizado', 'ok');
+        } catch (err) { API.toast(err.message, 'err'); }
+      });
+
+      const bSol = document.getElementById('btn-solicitud');
+      if (bSol) bSol.addEventListener('click', async () => {
+        const motivo = prompt('Motivo para ser moderador (opcional):');
+        try {
+          const d = await API.post('/api/mod/solicitudes', { motivo });
+          API.toast('Solicitud enviada. Los moderadores decidirán.', 'ok');
+          renderPerfil();
+        } catch (err) { API.toast(err.message, 'err'); }
+      });
+
+      const formPromover = document.getElementById('form-promover');
+      if (formPromover) formPromover.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const codigo = new FormData(formPromover).get('codigo');
+        try {
+          const d = await API.post('/api/mod/promover-moderador', { codigo });
+          estado.user = d.user;
+          API.guardarSesion(d.user, API.tokens.get());
+          API.toast(d.message, 'ok');
+          location.href = 'moderador.html';
+        } catch (err) { API.toast(err.message, 'err'); }
+      });
+    }
+
+    document.getElementById('btn-salir').addEventListener('click', () => { API.cerrarSesion(); location.href = 'index.html'; });
+
+    (async () => {
+      estado.user = API.usuario();
+      if (login()) return;
+      try { await yo(); } catch (_e) { API.toast('Sesión expirada, vuelve a entrar', 'err'); API.cerrarSesion(); location.href = 'login.html'; return; }
+      const pan = (location.hash || '#publicar').replace('#', '');
+      activar([...document.querySelectorAll('.tabs button')].some(b => b.dataset.pan === pan) ? pan : 'publicar');
+    })();
+  </script>
+</body>
+</html>

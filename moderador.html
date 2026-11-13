@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Panel moderador — Luta e Dança</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/png">
+  <link rel="stylesheet" href="web/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="inicio.html"><img class="brand-logo" src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA">LUTA<em>·DANÇA</em></a>
+    <nav class="nav-links">
+      <a href="inicio.html">Inicio</a>
+      <a href="index.html">Feed</a>
+      <a href="foro.html">Foro</a>
+      <a href="puzzles.html">Puzzles</a>
+      <a href="encyclopedia.html">Enciclopedia</a>
+      <a href="informacion.html">Información</a>
+    </nav>
+    <span id="cabecera" style="margin-left:auto; color:var(--muted)"></span>
+    <a class="btn" href="dashboard.html">Mi perfil</a>
+    <button class="sutil" id="btn-salir">Salir</button>
+  </header>
+
+  <div class="tabs">
+    <button data-pan="solicitudes">Solicitudes</button>
+    <button data-pan="usuarios">Usuarios</button>
+    <button data-pan="comisiones">Comisiones</button>
+    <button data-pan="contenido">Contenido</button>
+    <button data-pan="foro">Foro</button>
+    <button data-pan="comentarios">Comentarios</button>
+    <button data-pan="reportes" class="activo">Crear informes</button>
+  </div>
+
+  <section class="panel" id="pan-solicitudes" style="display:none"></section>
+  <section class="panel" id="pan-usuarios" style="display:none"></section>
+  <section class="panel" id="pan-comisiones" style="display:none"></section>
+  <section class="panel" id="pan-contenido" style="display:none"></section>
+  <section class="panel" id="pan-foro" style="display:none"></section>
+  <section class="panel" id="pan-comentarios" style="display:none"></section>
+  <section class="panel" id="pan-reportes">
+    <div class="cuadro">
+      <h3>Crear informes de datos</h3>
+      <p class="span-mut">Genera informes cuando los necesites. No dependen de que haya solicitudes o reportes de contenido pendientes. Revisa una vista previa y descarga los datos como CSV o JSON.</p>
+      <div class="fila" style="align-items:center;margin-bottom:12px">
+        <label for="reporte-usuarios-rol">Rol</label>
+        <select id="reporte-usuarios-rol">
+          <option value="">Todos</option><option value="miembro">Miembro</option>
+          <option value="moderador">Moderador</option><option value="admin">Admin</option>
+        </select>
+        <label for="reporte-usuarios-estado">Estado</label>
+        <select id="reporte-usuarios-estado">
+          <option value="">Todos</option><option value="activo">Activo</option>
+          <option value="pendiente">Pendiente</option><option value="suspendido">Suspendido</option>
+          <option value="rechazado">Rechazado</option>
+        </select>
+      </div>
+      <div class="fila reporte-descargas">
+        <button class="btn" data-reporte="usuarios" data-formato="csv">Usuarios · CSV</button>
+        <button class="btn" data-reporte="usuarios" data-formato="json">Usuarios · JSON</button>
+        <button class="btn" data-reporte="diagramas" data-formato="csv">Diagramas · CSV</button>
+        <button class="btn" data-reporte="diagramas" data-formato="json">Diagramas · JSON</button>
+        <button class="btn" data-reporte="contenido" data-formato="csv">Contenido · CSV</button>
+        <button class="btn" data-reporte="contenido" data-formato="json">Contenido · JSON</button>
+        <button class="btn" data-reporte="foro" data-formato="csv">Foro · CSV</button>
+        <button class="btn" data-reporte="foro" data-formato="json">Foro · JSON</button>
+        <button class="btn primario" data-reporte="general" data-formato="csv">General · CSV</button>
+        <button class="btn primario" data-reporte="general" data-formato="json">General · JSON</button>
+      </div>
+    </div>
+
+    <div class="cuadro">
+      <h3>Informes gráficos</h3>
+      <div class="fila reporte-controles">
+        <label for="chart-metric">Métrica</label>
+        <select id="chart-metric">
+          <option value="usuarios_rol">Usuarios por rol</option>
+          <option value="usuarios_estado">Usuarios por estado</option>
+          <option value="alumnos_rango">Miembros por rango</option>
+          <option value="contenido_tipo">Contenido por tipo</option>
+          <option value="videos_dificultad">Videos por dificultad</option>
+          <option value="contenido_por_profesor">Contenido por creador (top 10)</option>
+          <option value="foro_actividad">Foro: likes y respuestas</option>
+          <option value="resumen_general">Resumen general (totales)</option>
+          <option value="registros_por_mes">Registros por mes</option>
+        </select>
+        <div class="fila" id="chart-type-toggle">
+          <button type="button" class="btn chart-type-btn activo" data-type="pie">🥧 Torta</button>
+          <button type="button" class="btn chart-type-btn" data-type="bar">📊 Barras</button>
+          <button type="button" class="btn chart-type-btn" data-type="line">📈 Líneas</button>
+        </div>
+        <button type="button" class="btn" id="chart-download-btn">Descargar PNG</button>
+        <button type="button" class="btn" id="chart-refresh-btn">Actualizar datos</button>
+      </div>
+      <div style="position:relative;height:380px;max-width:900px;margin:12px auto">
+        <canvas id="report-chart"></canvas>
+      </div>
+      <p id="chart-empty-msg" class="span-mut" style="display:none;text-align:center">Sin datos para mostrar.</p>
+    </div>
+
+    <div class="cuadro">
+      <div class="fila" style="align-items:center;justify-content:space-between">
+        <div><h3 style="margin-bottom:4px">Vista previa del reporte</h3><span id="report-preview-title" class="span-mut">Selecciona un reporte para comenzar</span></div>
+        <button type="button" class="btn" id="report-download-btn" hidden>Descargar</button>
+      </div>
+      <div id="report-preview-wrap" style="overflow-x:auto;margin-top:12px">
+        <p class="span-mut">Los primeros 50 registros se muestran aquí; la descarga incluye todos los resultados.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">Luta e Dança</footer>
+
+  <script src="web/js/api.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="moderador-reportes.js"></script>
+  <script>
+    let usuarioActual = null;
+    function esc(s) { return API.esc(s); }
+
+    async function iniciar() {
+      try {
+        const d = await API.get('/api/auth/yo');
+        if (d.user.rol !== 'moderador' && d.user.rol !== 'admin') {
+          API.toast('No tienes permisos de moderador', 'err');
+          location.href = 'dashboard.html';
+          return;
+        }
+        usuarioActual = d.user;
+        document.getElementById('cabecera').textContent = `${d.user.nombre} · ${d.user.rol}`;
+      } catch (e) {
+        API.cerrarSesion();
+        location.href = 'login.html';
+        return;
+      }
+      const tabs = document.querySelectorAll('.tabs button');
+      tabs.forEach(b => b.addEventListener('click', () => {
+        tabs.forEach(x => x.classList.toggle('activo', x === b));
+        document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+        document.getElementById(`pan-${b.dataset.pan}`).style.display = 'block';
+        const render = renderers[b.dataset.pan];
+        if (render) render().catch(e => API.toast(e.message, 'err'));
+        if (b.dataset.pan === 'reportes') {
+          window.initReportesModerador().catch(e => API.toast(e.message, 'err'));
+        }
+      }));
+      window.initReportesModerador().catch(e => API.toast(e.message, 'err'));
+    }
+
+    const renderers = {
+      async solicitudes() {
+        const pan = document.getElementById('pan-solicitudes');
+        const d = await API.get('/api/mod/solicitudes?estado=pendiente');
+        if (!d.items.length) { pan.innerHTML = `<div class="hueco">No hay solicitudes pendientes.</div>`; return; }
+        pan.innerHTML = `<h3 style="margin-top:0">Solicitudes de moderación pendientes</h3>` + d.items.map(s => `
+          <div class="cuadro">
+            <div class="fila" style="align-items:center">
+              <div style="flex:1">
+                <strong>${esc(s.nombre)}</strong> <span class="span-mut">(${esc(s.email)})</span>
+                <div class="span-mut">${s.motivo ? esc(s.motivo) : 'Sin motivo'}</div>
+                <div class="chip" style="margin-top:6px">A favor: ${s.votes_aprueba}</div>
+                <div class="chip">En contra: ${s.votes_rechaza}</div>
+              </div>
+              <div class="fila" style="min-width:200px">
+                ${s.ya_vote
+                  ? '<span class="span-mut">Ya votaste</span>'
+                  : `<button class="btn" data-voto="aprobar" data-sol="${s.id}">Aprobar</button>
+                     <button class="btn peligro" data-voto="rechazar" data-sol="${s.id}">Rechazar</button>`}
+              </div>
+            </div>
+          </div>`).join('');
+        pan.querySelectorAll('[data-voto]').forEach(b => b.addEventListener('click', async () => {
+          try {
+            await API.post(`/api/mod/solicitudes/${b.dataset.sol}/voto`, { decision: b.dataset.voto });
+            API.toast('Voto registrado', 'ok');
+            renderers.solicitudes();
+          } catch (e) { API.toast(e.message, 'err'); }
+        }));
+      },
+
+      async usuarios() {
+        const pan = document.getElementById('pan-usuarios');
+        const data = await API.get('/api/mod/usuarios');
+        const usuarios = data.items || [];
+        pan.innerHTML = `
+          <div class="cuadro">
+            <h3>Crear usuario</h3>
+            <form id="form-usuario-nuevo" class="form-grid">
+              <div class="campo"><label>Nombre</label><input name="nombre" required maxlength="120"></div>
+              <div class="campo"><label>Correo</label><input name="email" type="email" required maxlength="180"></div>
+              <div class="campo"><label>Contraseña (mín. 6 caracteres)</label><input name="password" type="password" minlength="6" required></div>
+              <div class="campo"><label>Estado inicial</label>
+                <select name="estado"><option value="activo">Activo</option><option value="pendiente">Pendiente</option></select>
+              </div>
+              <button class="primario" type="submit">Crear cuenta de miembro</button>
+            </form>
+          </div>
+          <div class="cuadro">
+            <div class="fila" style="align-items:center;justify-content:space-between">
+              <h3 style="margin:0">Usuarios (${usuarios.length})</h3>
+              <input id="buscar-usuarios" type="search" placeholder="Filtrar por nombre o correo" style="max-width:320px">
+            </div>
+            <div id="tabla-usuarios" style="overflow-x:auto;margin-top:12px"></div>
+          </div>`;
+
+        const tabla = document.getElementById('tabla-usuarios');
+        const renderLista = (lista) => {
+          if (!lista.length) {
+            tabla.innerHTML = '<p class="span-mut">No hay usuarios que coincidan.</p>';
+            return;
+          }
+          tabla.innerHTML = `<table class="tabla"><thead><tr>
+            <th>Usuario</th><th>Rol / estado</th><th>Editar</th><th>Acciones</th>
+          </tr></thead><tbody>${lista.map(u => `
+            <tr>
+              <td><strong>${esc(u.nombre)}</strong><br><span class="span-mut">${esc(u.email)}</span><br>
+                <small class="span-mut">#${u.id} · ${API.fecha(u.creado_en)}</small></td>
+              <td>${esc(u.rol)}<br><span class="chip">${esc(u.estado)}</span></td>
+              <td>${u.rol === 'admin' ? '<span class="span-mut">Cuenta protegida</span>' : `
+                <form data-user-edit="${u.id}" class="form-grid" style="min-width:220px">
+                  <input name="nombre" aria-label="Nombre" value="${esc(u.nombre)}" required>
+                  <input name="email" aria-label="Correo" type="email" value="${esc(u.email)}" required>
+                  <input name="rango" aria-label="Rango" placeholder="Rango (opcional)" value="${esc(u.rango || '')}">
+                  <select name="estado" aria-label="Estado">
+                    <option value="activo" ${u.estado === 'activo' ? 'selected' : ''}>Activo</option>
+                    <option value="pendiente" ${u.estado === 'pendiente' ? 'selected' : ''}>Pendiente</option>
+                    <option value="suspendido" ${u.estado === 'suspendido' ? 'selected' : ''}>Suspendido</option>
+                  </select>
+                  <input name="password" type="password" minlength="6" placeholder="Nueva contraseña (opcional)">
+                  <button class="btn" type="submit">Guardar</button>
+                </form>`}</td>
+              <td>${u.rol === 'admin' ? '' : `
+                ${u.rol === 'moderador' ? `<button class="btn sutil" data-demote="${u.id}">Degradar</button>` : `
+                  <form data-promote="${u.id}" class="form-grid">
+                    <input type="password" name="codigo" minlength="32" maxlength="512" placeholder="Clave de moderación (mín. 32 caracteres)" aria-label="Clave de moderación" autocomplete="off" required>
+                    <button class="btn" type="submit">Promover</button>
+                  </form>`}
+                <button class="btn peligro" data-user-delete="${u.id}" ${Number(u.id) === Number(usuarioActual.id) ? 'disabled title="No puedes eliminar tu propia cuenta"' : ''}>Eliminar</button>`}</td>
+            </tr>`).join('')}</tbody></table>`;
+
+          tabla.querySelectorAll('form[data-user-edit]').forEach(form => form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const values = Object.fromEntries(new FormData(form));
+            if (!values.password) delete values.password;
+            try {
+              await API.put(`/api/mod/usuarios/${form.dataset.userEdit}`, values);
+              API.toast('Usuario actualizado', 'ok');
+              renderers.usuarios();
+            } catch (err) { API.toast(err.message, 'err'); }
+          }));
+          tabla.querySelectorAll('form[data-promote]').forEach(form => form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const codigo = new FormData(form).get('codigo');
+            try {
+              await API.post('/api/mod/promover-moderador', {
+                codigo,
+                usuario_id: Number(form.dataset.promote),
+              });
+              API.toast('Usuario promovido a moderador', 'ok');
+              renderers.usuarios();
+            } catch (err) { API.toast(err.message, 'err'); }
+          }));
+          tabla.querySelectorAll('[data-demote]').forEach(button => button.addEventListener('click', async () => {
+            if (!confirm('¿Degradar este moderador a miembro?')) return;
+            try {
+              await API.put(`/api/mod/usuarios/${button.dataset.demote}`, { rol: 'miembro' });
+              API.toast('Rol actualizado', 'ok');
+              renderers.usuarios();
+            } catch (err) { API.toast(err.message, 'err'); }
+          }));
+          tabla.querySelectorAll('[data-user-delete]').forEach(button => button.addEventListener('click', async () => {
+            if (!confirm('¿Eliminar este usuario y sus datos asociados? Esta acción no se puede deshacer.')) return;
+            try {
+              await API.del(`/api/mod/usuarios/${button.dataset.userDelete}`);
+              API.toast('Usuario eliminado', 'ok');
+              renderers.usuarios();
+            } catch (err) { API.toast(err.message, 'err'); }
+          }));
+        };
+        renderLista(usuarios);
+        document.getElementById('buscar-usuarios').addEventListener('input', (e) => {
+          const q = e.target.value.trim().toLowerCase();
+          renderLista(usuarios.filter(u => `${u.nombre} ${u.email}`.toLowerCase().includes(q)));
+        });
+        document.getElementById('form-usuario-nuevo').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const values = Object.fromEntries(new FormData(e.currentTarget));
+          try {
+            await API.post('/api/mod/usuarios', values);
+            API.toast('Cuenta creada', 'ok');
+            renderers.usuarios();
+          } catch (err) { API.toast(err.message, 'err'); }
+        });
+      },
+
+      async comisiones() {
+        const pan = document.getElementById('pan-comisiones');
+        const d = await API.get('/api/mod/comision');
+        const pct = n => `${(Number(n) * 100).toLocaleString('es-ES')}%`;
+        pan.innerHTML = `
+          <div class="cuadro">
+            <h4>Comisión global de la plataforma</h4>
+            <p>Actual: <strong>${pct(d.comision_global)}</strong></p>
+            <form class="fila" id="form-global" style="margin-top:10px">
+              <input type="number" step="0.01" min="0" max="1" id="g-comision" value="${Number(d.comision_global)}" style="max-width:140px" required>
+              <button class="primario">Guardar global</button>
+            </form>
+          </div>
+          <div class="cuadro">
+            <h4>Buscar usuario para comisión personalizada</h4>
+            <form class="fila" id="form-buscar">
+              <input type="text" id="q-usuario" placeholder="nombre o correo…">
+              <button>Buscar</button>
+            </form>
+            <div id="resultados-busqueda" style="margin-top:10px"></div>
+          </div>
+          <div class="cuadro">
+            <h4>Comisiones personalizadas</h4>
+            <div id="overrides">
+              ${d.overrides.length ? `<table class="tabla"><tr><th>Usuario</th><th>Comisión</th><th></th></tr>` + d.overrides.map(o => `
+                <tr><td>${esc(o.nombre)} <span class="span-mut">(${esc(o.email)})</span></td>
+                <td>${pct(o.comision_personalizada)}</td>
+                <td><button class="btn peligro" data-quitar="${o.id}">Quitar over</button></td></tr>`).join('') + `</table>` : '<p class="span-mut">Ninguna.</p>'}</div>
+          </div>`;
+
+        document.getElementById('form-global').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          try {
+            await API.put('/api/mod/comision/global', { comision: Number(document.getElementById('g-comision').value) });
+            API.toast('Comisión global actualizada', 'ok');
+            renderers.comisiones();
+          } catch (err) { API.toast(err.message, 'err'); }
+        });
+
+        document.getElementById('form-buscar').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const q = document.getElementById('q-usuario').value.trim();
+          const d2 = await API.get(`/api/mod/usuarios?q=${encodeURIComponent(q)}`);
+          const cont = document.getElementById('resultados-busqueda');
+          if (!d2.items.length) { cont.innerHTML = '<p class="span-mut">Sin resultados.</p>'; return; }
+          cont.innerHTML = d2.items.map(u => `
+            <div class="fila" style="align-items:center; margin-bottom:6px">
+              <span style="flex:1">${esc(u.nombre)} (${esc(u.email)}) ${u.comision_personalizada ? pct(u.comision_personalizada) : ''}</span>
+              <input type="number" step="0.01" min="0" max="1" data-com-input="${u.id}" placeholder="0.00-1.00" style="max-width:110px">
+              <button data-com-set="${u.id}" ${u.modo_creador ? '' : 'disabled'} title="${u.modo_creador ? '' : 'Solo creadores'}">Asignar</button>
+            </div>`).join('');
+          cont.querySelectorAll('[data-com-set]').forEach(b => b.addEventListener('click', async () => {
+            const val = cont.querySelector(`[data-com-input="${b.dataset.comSet}"]`).value;
+            try {
+              if (val === '') { await API.put(`/api/mod/comision/usuario/${b.dataset.comSet}`, { comision: null }); }
+              else { await API.put(`/api/mod/comision/usuario/${b.dataset.comSet}`, { comision: Number(val) }); }
+              API.toast('Comisión personalizada guardada', 'ok');
+              renderers.comisiones();
+            } catch (err) { API.toast(err.message, 'err'); }
+          }));
+        });
+
+        pan.querySelectorAll('[data-quitar]').forEach(b => b.addEventListener('click', async () => {
+          try {
+            await API.put(`/api/mod/comision/usuario/${b.dataset.quitar}`, { comision: null });
+            API.toast('Override quitado', 'ok');
+            renderers.comisiones();
+          } catch (err) { API.toast(err.message, 'err'); }
+        }));
+      },
+
+      async contenido() {
+        const pan = document.getElementById('pan-contenido');
+        const d = await API.get('/api/feed?limit=50');
+        const items = d.items || [];
+        pan.innerHTML = `
+          <div class="cuadro">
+            <h3>Crear contenido</h3>
+            <form id="form-contenido-nuevo" class="form-grid" enctype="multipart/form-data">
+              <div class="campo"><label>Tipo</label>
+                <select id="tipo-contenido">
+                  <option value="video">Video</option><option value="imagen">Imagen</option>
+                  <option value="instruccional">Instruccional</option><option value="diagrama">Diagrama</option>
+                </select>
+              </div>
+              <div class="campo"><label>Título</label><input name="titulo" required maxlength="200"></div>
+              <div class="campo"><label>Descripción</label><textarea name="descripcion" rows="2"></textarea></div>
+              <div id="campos-tipo-contenido"></div>
+              <div class="campo"><label>Hashtags (separados por coma)</label><input name="hashtags"></div>
+              <button class="primario" type="submit">Crear contenido</button>
+            </form>
+          </div>
+          <div class="cuadro">
+            <h3>Contenido reciente (${items.length})</h3>
+            ${items.length ? `<div style="overflow-x:auto"><table class="tabla">
+              <thead><tr><th>Tipo</th><th>Título / autor</th><th>Editar</th><th></th></tr></thead>
+              <tbody>${items.map(it => `<tr>
+                <td>${esc(it.tipo)}</td>
+                <td><a href="detalle.html?tipo=${encodeURIComponent(it.tipo)}&id=${encodeURIComponent(it.id)}">${esc(it.titulo)}</a><br>
+                  <span class="span-mut">${esc(it.autor_nombre || 'Miembro')} · ${API.fecha(it.creado_en)}</span></td>
+                <td><form data-content-edit="${it.tipo}:${it.id}" class="form-grid" style="min-width:220px">
+                  <input name="titulo" aria-label="Título" value="${esc(it.titulo)}" required>
+                  <textarea name="descripcion" aria-label="Descripción" rows="2">${esc(it.descripcion || '')}</textarea>
+                  ${it.tipo === 'video' ? `<input name="categoria" aria-label="Categoría" value="${esc(it.categoria || '')}" placeholder="Categoría">
+                    <select name="dificultad"><option value="basico" ${it.dificultad === 'basico' ? 'selected' : ''}>Básico</option>
+                      <option value="intermedio" ${it.dificultad === 'intermedio' ? 'selected' : ''}>Intermedio</option>
+                      <option value="avanzado" ${it.dificultad === 'avanzado' ? 'selected' : ''}>Avanzado</option></select>` : ''}
+                  ${it.tipo === 'imagen' ? `<select name="tipo"><option value="diagrama" ${it.subtipo === 'diagrama' ? 'selected' : ''}>Diagrama</option>
+                    <option value="foto_posicion" ${it.subtipo === 'foto_posicion' ? 'selected' : ''}>Foto de posición</option>
+                    <option value="captura" ${it.subtipo === 'captura' ? 'selected' : ''}>Captura</option>
+                    <option value="infografia" ${it.subtipo === 'infografia' ? 'selected' : ''}>Infografía</option>
+                    <option value="otro" ${it.subtipo === 'otro' ? 'selected' : ''}>Otro</option></select>` : ''}
+                  ${it.tipo === 'instruccional' ? `<input name="categoria" aria-label="Categoría" value="${esc(it.categoria || '')}" placeholder="Categoría">
+                    <select name="nivel"><option value="principiante" ${it.nivel === 'principiante' ? 'selected' : ''}>Principiante</option>
+                      <option value="intermedio" ${it.nivel === 'intermedio' ? 'selected' : ''}>Intermedio</option>
+                      <option value="avanzado" ${it.nivel === 'avanzado' ? 'selected' : ''}>Avanzado</option></select>` : ''}
+                  ${it.tipo === 'diagrama' ? `<select name="tipo"><option value="arbol_decision" ${it.subtipo === 'arbol_decision' ? 'selected' : ''}>Árbol de decisión</option>
+                    <option value="flujo_posiciones" ${it.subtipo === 'flujo_posiciones' ? 'selected' : ''}>Flujo de posiciones</option>
+                    <option value="sistema_juego" ${it.subtipo === 'sistema_juego' ? 'selected' : ''}>Sistema de juego</option>
+                    <option value="cadena_sumision" ${it.subtipo === 'cadena_sumision' ? 'selected' : ''}>Cadena de sumisión</option></select>` : ''}
+                  <button class="btn" type="submit">Guardar cambios</button></form></td>
+                <td><button class="btn peligro" data-delmod="${it.tipo}:${it.id}">Eliminar</button></td>
+              </tr>`).join('')}</tbody></table></div>` : '<p class="span-mut">Todavía no hay contenido.</p>'}
+          </div>`;
+
+        const tipoSelect = document.getElementById('tipo-contenido');
+        const camposTipo = document.getElementById('campos-tipo-contenido');
+        const renderCampos = () => {
+          const tipo = tipoSelect.value;
+          camposTipo.innerHTML = tipo === 'video' ? `
+            <div class="fila"><div class="campo"><label>Categoría</label><input name="categoria"></div>
+              <div class="campo"><label>Dificultad</label><select name="dificultad">
+                <option value="basico">Básico</option><option value="intermedio">Intermedio</option><option value="avanzado">Avanzado</option></select></div></div>
+            <div class="campo"><label>Archivo de video</label><input name="video" type="file" accept="video/*" required></div>`
+            : tipo === 'imagen' ? `
+              <div class="campo"><label>Tipo de imagen</label><select name="tipo">
+                <option value="diagrama">Diagrama</option><option value="foto_posicion">Foto de posición</option>
+                <option value="captura">Captura</option><option value="infografia">Infografía</option><option value="otro">Otro</option></select></div>
+              <div class="campo"><label>Archivo de imagen</label><input name="imagen" type="file" accept="image/*" required></div>`
+            : tipo === 'instruccional' ? `
+              <div class="fila"><div class="campo"><label>Categoría</label><input name="categoria"></div>
+                <div class="campo"><label>Nivel</label><select name="nivel">
+                  <option value="principiante">Principiante</option><option value="intermedio">Intermedio</option><option value="avanzado">Avanzado</option></select></div></div>`
+            : `<div class="fila"><div class="campo"><label>Tipo de diagrama</label><select name="tipo">
+                <option value="arbol_decision">Árbol de decisión</option><option value="flujo_posiciones">Flujo de posiciones</option>
+                <option value="sistema_juego">Sistema de juego</option><option value="cadena_sumision">Cadena de sumisión</option></select></div>
+                <div class="campo"><label>Datos de nodos (JSON)</label><textarea name="nodos" rows="3">{}</textarea></div></div>`;
+        };
+        tipoSelect.addEventListener('change', renderCampos);
+        renderCampos();
+        document.getElementById('form-contenido-nuevo').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const form = e.currentTarget;
+          const tipo = tipoSelect.value;
+          try {
+            await API.post(`/api/contenido/${tipo}`, new FormData(form));
+            API.toast('Contenido creado', 'ok');
+            renderers.contenido();
+          } catch (err) { API.toast(err.message, 'err'); }
+        });
+        pan.querySelectorAll('form[data-content-edit]').forEach(form => form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const [tipo, id] = form.dataset.contentEdit.split(':');
+          const values = Object.fromEntries(new FormData(form));
+          try {
+            await API.put(`/api/contenido/${tipo}/${id}`, values);
+            API.toast('Contenido actualizado', 'ok');
+            renderers.contenido();
+          } catch (err) { API.toast(err.message, 'err'); }
+        }));
+        pan.querySelectorAll('[data-delmod]').forEach(b => b.addEventListener('click', async () => {
+          const [tipo, id] = b.dataset.delmod.split(':');
+          if (!confirm('¿Eliminar este contenido de la plataforma?')) return;
+          try {
+            await API.del(`/api/contenido/${tipo}/${id}`);
+            API.toast('Contenido eliminado', 'ok');
+            renderers.contenido();
+          } catch (err) { API.toast(err.message, 'err'); }
+        }));
+      },
+
+      async foro() {
+        const pan = document.getElementById('pan-foro');
+        const data = await API.get('/api/foro?limit=50');
+        const items = data.items || [];
+        pan.innerHTML = `
+          <div class="cuadro">
+            <h3>Publicar en el foro</h3>
+            <form id="form-post-nuevo" class="form-grid">
+              <div class="campo"><label>Mensaje</label><textarea name="mensaje" rows="3" maxlength="4000" required></textarea></div>
+              <button class="primario" type="submit">Publicar</button>
+            </form>
+          </div>
+          <div class="cuadro"><h3>Publicaciones (${items.length})</h3>
+            ${items.length ? items.map(p => `
+              <article class="cuadro">
+                <p class="span-mut">${esc(p.autor_nombre)} · ${API.fecha(p.creado_en)} · ${p.likes_count || 0} me gusta · ${p.respuestas_count || 0} respuestas</p>
+                <form data-forum-edit="${p.id}" class="form-grid">
+                  <div class="campo"><label>Mensaje</label><textarea name="mensaje" rows="3" maxlength="4000" required>${esc(p.mensaje)}</textarea></div>
+                  <button class="btn" type="submit">Guardar cambios</button>
+                  <button class="btn peligro" type="button" data-forum-delete="${p.id}">Eliminar</button>
+                </form>
+              </article>`).join('') : '<p class="span-mut">Todavía no hay publicaciones.</p>'}
+          </div>`;
+        document.getElementById('form-post-nuevo').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const mensaje = new FormData(e.currentTarget).get('mensaje');
+          try {
+            await API.post('/api/foro', { mensaje });
+            API.toast('Publicación creada', 'ok');
+            renderers.foro();
+          } catch (err) { API.toast(err.message, 'err'); }
+        });
+        pan.querySelectorAll('form[data-forum-edit]').forEach(form => form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const mensaje = new FormData(form).get('mensaje');
+          try {
+            await API.put(`/api/foro/${form.dataset.forumEdit}`, { mensaje });
+            API.toast('Publicación actualizada', 'ok');
+            renderers.foro();
+          } catch (err) { API.toast(err.message, 'err'); }
+        }));
+        pan.querySelectorAll('[data-forum-delete]').forEach(button => button.addEventListener('click', async () => {
+          if (!confirm('¿Eliminar esta publicación?')) return;
+          try {
+            await API.del(`/api/foro/${button.dataset.forumDelete}`);
+            API.toast('Publicación eliminada', 'ok');
+            renderers.foro();
+          } catch (err) { API.toast(err.message, 'err'); }
+        }));
+      },
+
+      async comentarios() {
+        const pan = document.getElementById('pan-comentarios');
+        const data = await API.get('/api/mod/comentarios?limit=200');
+        const items = data.items || [];
+        pan.innerHTML = `<div class="cuadro"><h3>Comentarios recientes (${items.length})</h3>
+          ${items.length ? items.map(c => `
+            <article class="cuadro">
+              <p><strong>${esc(c.autor_nombre)}</strong> · ${esc(c.tipo)} · ${API.fecha(c.creado_en)}</p>
+              <p>${esc(c.mensaje)}</p>
+              <p class="span-mut">En: ${esc(c.contenido_titulo || `contenido #${c.contenido_id}`)}</p>
+              <button class="btn peligro" data-comment-delete="${c.id}">Eliminar comentario</button>
+            </article>`).join('') : '<p class="span-mut">No hay comentarios.</p>'}
+        </div>`;
+        pan.querySelectorAll('[data-comment-delete]').forEach(button => button.addEventListener('click', async () => {
+          if (!confirm('¿Eliminar este comentario y sus respuestas?')) return;
+          try {
+            await API.del(`/api/mod/comentarios/${button.dataset.commentDelete}`);
+            API.toast('Comentario eliminado', 'ok');
+            renderers.comentarios();
+          } catch (err) { API.toast(err.message, 'err'); }
+        }));
+      },
+
+      async reportes() {
+        const pan = document.getElementById('pan-reportes');
+        const d = await API.get('/api/mod/reportes?estado=pendiente');
+        if (!d.items.length) { pan.innerHTML = `<div class="hueco">No hay reportes pendientes.</div>`; return; }
+        pan.innerHTML = `<h3 style="margin-top:0">Reportes de contenido pendientes</h3>` + d.items.map(r => `
+          <div class="cuadro">
+            <div class="fila" style="align-items:center">
+              <div style="flex:1">
+                <strong>${r.titulo ? esc(r.titulo) : `<span class="span-err">contenido #${r.contenido_id}</span>`}</strong>
+                <span class="chip" style="margin-left:6px">${esc(r.contenido_tipo)}</span>
+                <div class="span-mut">Reportado por ${esc(r.reportado_por)} · ${API.fecha(r.creado_en)}</div>
+                <div>Motivo: <em>${esc(r.motivo)}</em></div>
+              </div>
+              <div class="fila" style="min-width:120px">
+                <a class="btn sutil" href="detalle.html?tipo=${esc(r.contenido_tipo)}&id=${esc(r.contenido_id)}">Ver</a>
+                <button class="btn" data-rep="${r.id}" data-est="${r.contenido_tipo}:${r.contenido_id}">Revisado (eliminar)</button>
+                <button class="btn peligro" data-desc="${r.id}">Descartar</button>
+              </div>
+            </div>
+          </div>`).join('');
+        pan.querySelectorAll('[data-desc]').forEach(b => b.addEventListener('click', async () => {
+          try {
+            await API.put(`/api/mod/reportes/${b.dataset.desc}/estado`, { estado: 'descartado' });
+            API.toast('Reporte descartado', 'ok');
+            renderers.reportes();
+          } catch (e) { API.toast(e.message, 'err'); }
+        }));
+        pan.querySelectorAll('[data-rep]').forEach(b => b.addEventListener('click', async () => {
+          const [tipo, id] = b.dataset.est.split(':');
+          if (!confirm('¿Eliminar el contenido reportado?')) return;
+          try {
+            await API.del(`/api/contenido/${tipo}/${id}`);
+            await API.put(`/api/mod/reportes/${b.dataset.rep}/estado`, { estado: 'revisado' });
+            API.toast('Contenido eliminado y reporte cerrado', 'ok');
+            renderers.reportes();
+          } catch (e) { API.toast(e.message, 'err'); }
+        }));
+      },
+    };
+
+    document.getElementById('btn-salir').addEventListener('click', () => { API.cerrarSesion(); location.href = 'login.html'; });
+    iniciar();
+  </script>
+</body>
+</html>

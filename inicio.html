@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Luta e Dança — Inicio</title>
+  <link rel="icon" href="images/imagen_2026-05-20_204940938.png" type="image/png">
+  <link rel="stylesheet" href="web/css/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="inicio.html"><img class="brand-logo" src="images/imagen_2026-05-20_204940938.png" alt="LUTA E DANÇA">LUTA<em>·DANÇA</em></a>
+    <nav class="nav-links">
+      <a href="inicio.html" class="activo">Inicio</a>
+      <a href="index.html">Feed</a>
+      <a href="foro.html">Foro</a>
+      <a href="puzzles.html">Puzzles</a>
+      <a href="encyclopedia.html">Enciclopedia</a>
+      <a href="informacion.html">Información</a>
+    </nav>
+    <a class="btn primario" href="dashboard.html#publicar">Publicar</a>
+    <div id="nav-identidad" style="margin-left:auto"></div>
+  </header>
+
+  <section class="hero">
+    <h1>LUTA <em>E</em> DANÇA</h1>
+    <h2 style="margin:0 0 8px; font-weight:600">Aprende de Grappling</h2>
+    <p>Una plataforma abierta donde <strong>cualquier miembro</strong> publica, aprende y gana: videos de artes marciales, danza, instruccionales, diagramas interactivos y un simulador de técnicas.</p>
+    <div class="ctas">
+      <a class="btn primario" href="login.html">Únete ahora</a>
+      <a class="btn" href="index.html">Ver feed de la comunidad</a>
+    </div>
+  </section>
+
+  <section class="pilares">
+    <div class="pilar"><h3>Base sólida</h3><p>Construye una base sólida para tu estilo de combate.</p></div>
+    <div class="pilar"><h3>Confianza corporal</h3><p>Pierde el miedo a pasar guardia, desarrolla confianza en tu cuerpo y mejora tu postura.</p></div>
+    <div class="pilar"><h3>Plan personalizado</h3><p>Crea un plan de pelea personalizado para alcanzar tus objetivos más rápido.</p></div>
+  </section>
+
+  <section class="centro">
+    <h2 style="text-align:center">¡Eche un vistazo a lo que te espera!</h2>
+    <div class="ratio16">
+      <iframe src="https://www.youtube.com/embed/AoxU1CY-4Kg?mute=1&showinfo=0&start=0" allowfullscreen loading="lazy"></iframe>
+    </div>
+  </section>
+
+  <section class="doble">
+    <div class="cuadro">
+      <h3>Sobre nosotros</h3>
+      <p class="span-mut">Con el advenimiento de la digitalización y la masificación del internet en las últimas dos décadas, el panorama de la enseñanza técnica experimentó una transformación radical. El mercado se inundó de plataformas de video bajo demanda, canales especializados y videotutoriales de larga duración protagonizados por competidores de élite.</p>
+    </div>
+    <div class="cuadro">
+      <h3>Nuestro problema</h3>
+      <p class="span-mut">Ese fenómeno democratizó el acceso a la información técnica de vanguardia, pero originó el problema central contemporáneo: la saturación de información desestructurada. Las plataformas comerciales operan como repositorios de video pasivos, asumiendo que ver repetidamente una técnica equivale a comprender cuándo y cómo aplicarla en un combate real.</p>
+    </div>
+  </section>
+
+  <section class="pilares">
+    <div class="pilar" style="border-top-color:var(--accent2)">
+      <h3>Feed de la comunidad</h3>
+      <p class="span-mut">Contenido por tipo, filtros, miniaturas automáticas y reproducción directa.</p>
+      <a class="btn sutil" href="index.html">Explorar →</a>
+    </div>
+    <div class="pilar" style="border-top-color:#4a9eff">
+      <h3>Simulador de técnicas</h3>
+      <p class="span-mut">El puzzle de posiciones: ofensiva, defensa y transiciones con IA opcional.</p>
+      <a class="btn sutil" href="puzzles.html">Jugar →</a>
+    </div>
+    <div class="pilar" style="border-top-color:#a8e063">
+      <h3>Enciclopedia visual</h3>
+      <p class="span-mut">Guardas, pasadas, sumisiones y más, explicadas con diagramas.</p>
+      <a class="btn sutil" href="encyclopedia.html">Consultar →</a>
+    </div>
+    <div class="pilar" style="border-top-color:#ffca45">
+      <h3>Monetización para creadores</h3>
+      <p class="span-mut">Vende tutoriales o lanza tu plan de suscripción con pagos simulados.</p>
+      <a class="btn sutil" href="informacion.html">Ver información →</a>
+    </div>
+  </section>
+
+  <section class="centro">
+    <div class="cuadro" style="text-align:center">
+      <h3>Nuestra historia</h3>
+      <p class="span-mut">Al carecer de las limitaciones operativas de un gimnasio o club específico, el sistema se concibe desde su origen como una solución tecnológica global y escalable para la comunidad de deportes de combate.</p>
+      <div class="ctas" style="margin-top:10px">
+        <a class="btn primario" href="login.html">Entrar a la plataforma</a>
+        <a class="btn" href="#top">Volver arriba</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">Luta e Dança — plataforma abierta de artes marciales y danza</footer>
+
+  <script src="web/js/api.js"></script>
+  <script>
+    const nav = document.getElementById('nav-identidad');
+    const user = API.usuario();
+    if (user) {
+      nav.innerHTML = `<a class="btn" href="dashboard.html">Mi perfil</a>
+        <a class="btn sutil" href="#" id="salir">Salir</a>`;
+      document.getElementById('salir').addEventListener('click', (e) => { e.preventDefault(); API.cerrarSesion(); location.reload(); });
+    } else {
+      nav.innerHTML = `<a class="btn" href="login.html">Iniciar sesión</a>`;
+    }
+  </script>
+</body>
+</html>
